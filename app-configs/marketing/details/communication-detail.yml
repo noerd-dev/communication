@@ -1,0 +1,43 @@
+title: Communication Details
+description: ''
+fields:
+  - name: detailData.type
+    label: Type
+    type: text
+    colspan: 3
+    readonly: true
+  - name: detailData.status
+    label: Status
+    type: text
+    colspan: 3
+    readonly: true
+  - name: detailData.sent_at
+    label: Sent at
+    type: text
+    colspan: 6
+    readonly: true
+  - name: detailData.from
+    label: From
+    type: text
+    colspan: 6
+    readonly: true
+  - name: detailData.to
+    label: To
+    type: text
+    colspan: 6
+    readonly: true
+  - name: detailData.subject
+    label: Subject
+    type: text
+    colspan: 12
+    readonly: true
+  - name: detailData.mailable_class
+    label: Mailable class
+    type: text
+    colspan: 12
+    readonly: true
+  - name: detailData.error_message
+    label: Error message
+    type: textarea
+    colspan: 12
+    readonly: true

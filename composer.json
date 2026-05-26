@@ -1,0 +1,27 @@
+{
+    "name": "noerd/marketing",
+    "description": "Marketing module for noerd platform — central email sending and communications log",
+    "type": "library",
+    "version": "0.1.0",
+    "license": "proprietary",
+    "require": {
+        "noerd/noerd": "^0.6",
+        "noerd/customer": "^0.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Noerd\\Marketing\\": "src/",
+            "Noerd\\Marketing\\Tests\\": "tests/",
+            "Noerd\\Marketing\\Database\\Factories\\": "database/factories/",
+            "Noerd\\Marketing\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Noerd\\Marketing\\Providers\\MarketingServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable"
+}

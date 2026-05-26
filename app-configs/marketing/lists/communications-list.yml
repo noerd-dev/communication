@@ -1,0 +1,16 @@
+title: Communications
+disableSearch: false
+columns:
+  - field: sent_at
+    label: Sent at
+    type: datetime
+  - field: type
+    label: Type
+  - field: status
+    label: Status
+  - field: from
+    label: From
+  - field: to
+    label: To
+  - field: subject
+    label: Subject

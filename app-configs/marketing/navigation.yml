@@ -1,0 +1,10 @@
+- title: Marketing
+  name: marketing
+  hidden: true
+  route: communications
+  block_menus:
+    - title: Marketing
+      navigations:
+        - title: Communications
+          route: communications
+          heroicon: envelope

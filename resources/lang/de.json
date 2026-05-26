@@ -1,0 +1,19 @@
+{
+    "Marketing": "Marketing",
+    "Communications": "Kommunikation",
+    "Communication Details": "Kommunikations-Details",
+    "Type": "Typ",
+    "Status": "Status",
+    "From": "Absender",
+    "To": "Empfänger",
+    "Subject": "Betreff",
+    "Body": "Inhalt",
+    "Sent at": "Versendet am",
+    "Error message": "Fehlermeldung",
+    "Mailable class": "Mailable-Klasse",
+    "Email": "E-Mail",
+    "Sent": "Versendet",
+    "Failed": "Fehlgeschlagen",
+    "Queued": "In Warteschlange",
+    "Customer": "Kunde"
+}
