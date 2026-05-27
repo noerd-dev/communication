@@ -50,6 +50,7 @@ it('persists marketing settings on save', function (): void {
 });
 
 it('sends a test email to the logged-in user', function (): void {
+    config(['mail.default' => 'array']);
     $user = actingAsMarketingUser();
     app('mail.manager')->forgetMailers();
     Cache::flush();
