@@ -45,6 +45,7 @@ class LogMessageSentFallback
             'from' => $this->firstAddress($message->getFrom()),
             'subject' => $message->getSubject(),
             'body' => $this->extractBody($message),
+            'message_id' => $this->extractMessageId($message),
             'sent_at' => $communication->sent_at ?? now(),
         ])->save();
     }
@@ -60,10 +61,28 @@ class LogMessageSentFallback
             'to' => $this->joinAddresses($message->getTo()),
             'subject' => $message->getSubject(),
             'body' => $this->extractBody($message),
+            'message_id' => $this->extractMessageId($message),
             'mailable_class' => null,
             'metadata' => null,
             'sent_at' => now(),
         ]);
+    }
+
+    private function extractMessageId(Email $message): ?string
+    {
+        $header = $message->getHeaders()->get('Message-ID');
+
+        if ($header === null) {
+            return null;
+        }
+
+        $value = trim($header->getBodyAsString());
+
+        if ($value === '') {
+            return null;
+        }
+
+        return trim($value, '<>');
     }
 
     private function extractBody(Email $message): ?string

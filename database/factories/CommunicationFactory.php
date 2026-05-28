@@ -24,6 +24,7 @@ class CommunicationFactory extends Factory
             'subject' => $this->faker->sentence(),
             'body' => $this->faker->paragraph(),
             'mailable_class' => null,
+            'message_id' => null,
             'error_message' => null,
             'metadata' => null,
             'sent_at' => now(),

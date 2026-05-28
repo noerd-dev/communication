@@ -36,6 +36,11 @@ fields:
     type: text
     colspan: 12
     readonly: true
+  - name: detailData.message_id
+    label: SMTP Message-ID
+    type: text
+    colspan: 12
+    readonly: true
   - name: detailData.error_message
     label: Error message
     type: textarea
