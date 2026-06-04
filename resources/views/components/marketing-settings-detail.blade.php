@@ -79,7 +79,10 @@ new class extends Component {
         }
 
         $settings = (object) array_merge($this->settingsData, ['tenant_id' => $this->clientId]);
-        $fromEmail = $this->settingsData['from_email'] ?? null ?: config('mail.from.address');
+        $useCustomSmtp = (bool) ($this->settingsData['use_custom_smtp'] ?? false);
+        $fromEmail = $useCustomSmtp && ($this->settingsData['from_email'] ?? null)
+            ? $this->settingsData['from_email']
+            : config('mail.from.address');
 
         try {
             app(TenantSmtpResolver::class)->resolve($settings)
