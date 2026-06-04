@@ -23,4 +23,11 @@ class MarketingSetting extends Model
     {
         return MarketingSettingFactory::new();
     }
+
+    protected function casts(): array
+    {
+        return [
+            'use_custom_smtp' => 'boolean',
+        ];
+    }
 }

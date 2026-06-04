@@ -40,6 +40,7 @@ new class extends Component {
             'smtp_encryption' => null,
             'smtp_username' => null,
             'smtp_password' => null,
+            'use_custom_smtp' => false,
         ];
     }
 
@@ -127,51 +128,59 @@ new class extends Component {
             <x-noerd::input-error :messages="$errors->get('settingsData.reply_email')" class="mt-2"/>
         </div>
 
-        <div class="mt-2">
-            <x-noerd::input-label>{{ __('SMTP Host') }}</x-noerd::input-label>
-            <x-noerd::text-input wire:model="settingsData.smtp_host"/>
-            <x-noerd::input-error :messages="$errors->get('settingsData.smtp_host')" class="mt-2"/>
+        <div class="mt-4">
+            <x-noerd::checkbox wire:model.live="settingsData.use_custom_smtp">
+                {{ __('Use own SMTP server') }}
+            </x-noerd::checkbox>
         </div>
 
-        <div class="mt-2">
-            <x-noerd::input-label>{{ __('SMTP Port') }}</x-noerd::input-label>
-            <x-noerd::text-input type="number" wire:model="settingsData.smtp_port"/>
-            <x-noerd::input-error :messages="$errors->get('settingsData.smtp_port')" class="mt-2"/>
-        </div>
-
-        <div class="mt-2">
-            <x-noerd::input-label>{{ __('SMTP Encryption') }}</x-noerd::input-label>
-            <x-noerd::select-input wire:model="settingsData.smtp_encryption">
-                <option value="">{{ __('None') }}</option>
-                <option value="tls">TLS</option>
-                <option value="ssl">SSL</option>
-            </x-noerd::select-input>
-            <x-noerd::input-error :messages="$errors->get('settingsData.smtp_encryption')" class="mt-2"/>
-        </div>
-
-        <div class="mt-2">
-            <x-noerd::input-label>{{ __('SMTP Username') }}</x-noerd::input-label>
-            <x-noerd::text-input wire:model="settingsData.smtp_username"/>
-            <x-noerd::input-error :messages="$errors->get('settingsData.smtp_username')" class="mt-2"/>
-        </div>
-
-        <div class="mt-2" x-data="{ showPassword: false }">
-            <x-noerd::input-label>{{ __('SMTP Password') }}</x-noerd::input-label>
-            <div class="relative">
-                <x-noerd::text-input
-                    type="password"
-                    x-bind:type="showPassword ? 'text' : 'password'"
-                    wire:model="settingsData.smtp_password"
-                    class="!pr-20"/>
-                <button type="button"
-                        @click="showPassword = !showPassword"
-                        class="absolute inset-y-0 right-2 my-auto text-sm text-gray-600 hover:text-gray-900">
-                    <span x-show="!showPassword">{{ __('Show') }}</span>
-                    <span x-show="showPassword" style="display: none;">{{ __('Hide') }}</span>
-                </button>
+        @if($settingsData['use_custom_smtp'] ?? false)
+            <div class="mt-2">
+                <x-noerd::input-label>{{ __('SMTP Host') }}</x-noerd::input-label>
+                <x-noerd::text-input wire:model="settingsData.smtp_host"/>
+                <x-noerd::input-error :messages="$errors->get('settingsData.smtp_host')" class="mt-2"/>
             </div>
-            <x-noerd::input-error :messages="$errors->get('settingsData.smtp_password')" class="mt-2"/>
-        </div>
+
+            <div class="mt-2">
+                <x-noerd::input-label>{{ __('SMTP Port') }}</x-noerd::input-label>
+                <x-noerd::text-input type="number" wire:model="settingsData.smtp_port"/>
+                <x-noerd::input-error :messages="$errors->get('settingsData.smtp_port')" class="mt-2"/>
+            </div>
+
+            <div class="mt-2">
+                <x-noerd::input-label>{{ __('SMTP Encryption') }}</x-noerd::input-label>
+                <x-noerd::select-input wire:model="settingsData.smtp_encryption">
+                    <option value="">{{ __('None') }}</option>
+                    <option value="tls">TLS</option>
+                    <option value="ssl">SSL</option>
+                </x-noerd::select-input>
+                <x-noerd::input-error :messages="$errors->get('settingsData.smtp_encryption')" class="mt-2"/>
+            </div>
+
+            <div class="mt-2">
+                <x-noerd::input-label>{{ __('SMTP Username') }}</x-noerd::input-label>
+                <x-noerd::text-input wire:model="settingsData.smtp_username"/>
+                <x-noerd::input-error :messages="$errors->get('settingsData.smtp_username')" class="mt-2"/>
+            </div>
+
+            <div class="mt-2" x-data="{ showPassword: false }">
+                <x-noerd::input-label>{{ __('SMTP Password') }}</x-noerd::input-label>
+                <div class="relative">
+                    <x-noerd::text-input
+                        type="password"
+                        x-bind:type="showPassword ? 'text' : 'password'"
+                        wire:model="settingsData.smtp_password"
+                        class="!pr-20"/>
+                    <button type="button"
+                            @click="showPassword = !showPassword"
+                            class="absolute inset-y-0 right-2 my-auto text-sm text-gray-600 hover:text-gray-900">
+                        <span x-show="!showPassword">{{ __('Show') }}</span>
+                        <span x-show="showPassword" style="display: none;">{{ __('Hide') }}</span>
+                    </button>
+                </div>
+                <x-noerd::input-error :messages="$errors->get('settingsData.smtp_password')" class="mt-2"/>
+            </div>
+        @endif
 
         <div class="mt-4 border-t pt-4">
             <x-noerd::button

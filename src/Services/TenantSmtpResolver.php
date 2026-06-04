@@ -12,12 +12,17 @@ class TenantSmtpResolver
      * Returns the default mailer when settings are missing or incomplete.
      *
      * Expected settings object/array keys:
+     * - use_custom_smtp (only custom SMTP is used when truthy, otherwise the default mailer)
      * - smtp_host, smtp_port, smtp_encryption, smtp_username, smtp_password
      * - tenant_id (for unique mailer name)
      */
     public function resolve(mixed $settings = null): Mailer
     {
         if ($settings === null) {
+            return Mail::mailer();
+        }
+
+        if (! $this->extract($settings, 'use_custom_smtp')) {
             return Mail::mailer();
         }
 

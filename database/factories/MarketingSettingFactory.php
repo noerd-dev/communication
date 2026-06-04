@@ -21,6 +21,7 @@ class MarketingSettingFactory extends Factory
             'smtp_encryption' => null,
             'smtp_username' => null,
             'smtp_password' => null,
+            'use_custom_smtp' => false,
         ];
     }
 
@@ -32,6 +33,7 @@ class MarketingSettingFactory extends Factory
             'smtp_encryption' => 'tls',
             'smtp_username' => $username,
             'smtp_password' => 'secret',
+            'use_custom_smtp' => true,
         ]);
     }
 }

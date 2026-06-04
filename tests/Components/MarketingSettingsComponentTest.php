@@ -34,6 +34,7 @@ it('persists marketing settings on save', function (): void {
     Livewire::test('marketing::marketing-settings-detail')
         ->set('settingsData.from_email', 'from@example.com')
         ->set('settingsData.reply_email', 'reply@example.com')
+        ->set('settingsData.use_custom_smtp', true)
         ->set('settingsData.smtp_host', 'smtp.example.com')
         ->set('settingsData.smtp_port', 587)
         ->set('settingsData.smtp_encryption', 'tls')
@@ -45,6 +46,7 @@ it('persists marketing settings on save', function (): void {
     $saved = MarketingSetting::forTenant($user->selected_tenant_id);
     expect($saved)->not->toBeNull();
     expect($saved->from_email)->toBe('from@example.com');
+    expect($saved->use_custom_smtp)->toBeTrue();
     expect($saved->smtp_host)->toBe('smtp.example.com');
     expect($saved->smtp_port)->toBe(587);
 });
