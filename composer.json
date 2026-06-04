@@ -2,7 +2,7 @@
     "name": "noerd/marketing",
     "description": "Marketing module for noerd platform — central email sending and communications log",
     "type": "library",
-    "version": "v0.1.2",
+    "version": "v0.1.3",
     "license": "proprietary",
     "require": {
         "noerd/noerd": "^0.6",
