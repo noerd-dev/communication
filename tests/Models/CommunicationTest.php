@@ -3,13 +3,14 @@
 declare(strict_types=1);
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Noerd\Communication\Enums\CommunicationStatus;
+use Noerd\Communication\Enums\CommunicationType;
+use Noerd\Communication\Models\Communication;
 use Noerd\Customer\Models\Customer;
-use Noerd\Marketing\Enums\CommunicationStatus;
-use Noerd\Marketing\Enums\CommunicationType;
-use Noerd\Marketing\Models\Communication;
 use Noerd\Models\Tenant;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class);
+uses(TestCase::class);
 uses(RefreshDatabase::class);
 
 it('creates a communication via the factory', function (): void {

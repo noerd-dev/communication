@@ -1,4 +1,4 @@
-# Marketing Module
+# Communication Module
 
 Central email sending and communications log for the noerd platform.
 
@@ -11,7 +11,7 @@ Central email sending and communications log for the noerd platform.
 ## Usage
 
 ```php
-use Noerd\Marketing\Services\Communicator;
+use Noerd\Communication\Services\Communicator;
 
 app(Communicator::class)->send(
     mailable: new MyMailable($data),
@@ -22,6 +22,6 @@ app(Communicator::class)->send(
 
 ## Installation
 
-1. `composer require noerd/marketing`
+1. `composer require noerd/communication`
 2. `php artisan migrate`
-3. `php artisan noerd:install-marketing`
+3. `php artisan noerd:install-communication`

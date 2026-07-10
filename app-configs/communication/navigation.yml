@@ -1,13 +1,13 @@
-- title: Marketing
-  name: marketing
+- title: Communication
+  name: communication
   hidden: true
   route: communications
   block_menus:
-    - title: Marketing
+    - title: Communication
       navigations:
         - title: Communications
           route: communications
           heroicon: envelope
-        - title: Marketing Settings
-          route: marketing.settings
+        - title: Settings
+          route: communication.settings
           heroicon: cog-6-tooth

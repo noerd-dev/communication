@@ -5,16 +5,17 @@ declare(strict_types=1);
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Mail\SentMessage;
-use Noerd\Marketing\Enums\CommunicationStatus;
-use Noerd\Marketing\Listeners\LogMessageSentFallback;
-use Noerd\Marketing\Models\Communication;
-use Noerd\Marketing\Services\Communicator;
+use Noerd\Communication\Enums\CommunicationStatus;
+use Noerd\Communication\Listeners\LogMessageSentFallback;
+use Noerd\Communication\Models\Communication;
+use Noerd\Communication\Services\Communicator;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\SentMessage as SymfonySentMessage;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class);
+uses(TestCase::class);
 uses(RefreshDatabase::class);
 
 function buildMessageSentEvent(Email $email): MessageSent

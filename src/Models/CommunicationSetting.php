@@ -1,13 +1,13 @@
 <?php
 
-namespace Noerd\Marketing\Models;
+namespace Noerd\Communication\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Noerd\Marketing\Database\Factories\MarketingSettingFactory;
+use Noerd\Communication\Database\Factories\CommunicationSettingFactory;
 use Noerd\Traits\BelongsToTenant;
 
-class MarketingSetting extends Model
+class CommunicationSetting extends Model
 {
     use BelongsToTenant;
     use HasFactory;
@@ -42,9 +42,9 @@ class MarketingSetting extends Model
         return $this->use_custom_smtp ? ($this->reply_email ?: null) : null;
     }
 
-    protected static function newFactory(): MarketingSettingFactory
+    protected static function newFactory(): CommunicationSettingFactory
     {
-        return MarketingSettingFactory::new();
+        return CommunicationSettingFactory::new();
     }
 
     protected function casts(): array

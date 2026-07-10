@@ -1,6 +1,6 @@
 <?php
 
-namespace Noerd\Marketing\Enums;
+namespace Noerd\Communication\Enums;
 
 enum CommunicationType: string
 {

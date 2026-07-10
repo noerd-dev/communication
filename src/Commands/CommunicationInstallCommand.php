@@ -1,19 +1,19 @@
 <?php
 
-namespace Noerd\Marketing\Commands;
+namespace Noerd\Communication\Commands;
 
 use Illuminate\Console\Command;
 use Noerd\Traits\HasModuleInstallation;
 use Noerd\Traits\RequiresNoerdInstallation;
 
-class MarketingInstallCommand extends Command
+class CommunicationInstallCommand extends Command
 {
     use HasModuleInstallation;
     use RequiresNoerdInstallation;
 
-    protected $signature = 'noerd:install-marketing {--force : Overwrite existing files without asking}';
+    protected $signature = 'noerd:install-communication {--force : Overwrite existing files without asking}';
 
-    protected $description = 'Install marketing module content and navigation';
+    protected $description = 'Install communication module content and navigation';
 
     public function handle(): int
     {
@@ -22,22 +22,22 @@ class MarketingInstallCommand extends Command
 
     protected function getModuleName(): string
     {
-        return 'Marketing';
+        return 'Communication';
     }
 
     protected function getModuleKey(): string
     {
-        return 'marketing';
+        return 'communication';
     }
 
     protected function getDefaultAppTitle(): string
     {
-        return 'Marketing';
+        return 'Communication';
     }
 
     protected function getAppIcon(): string
     {
-        return 'marketing::icons.app';
+        return 'communication::icons.app';
     }
 
     protected function getAppRoute(): string
@@ -47,6 +47,6 @@ class MarketingInstallCommand extends Command
 
     protected function getSourceDir(): string
     {
-        return dirname(__DIR__, 2) . '/app-configs/marketing';
+        return dirname(__DIR__, 2) . '/app-configs/communication';
     }
 }

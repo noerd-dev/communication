@@ -2,7 +2,7 @@
 
 use Livewire\Attributes\Url;
 use Livewire\Component;
-use Noerd\Marketing\Models\Communication;
+use Noerd\Communication\Models\Communication;
 use Noerd\Traits\NoerdDetail;
 
 new class extends Component {

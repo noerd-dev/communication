@@ -2,7 +2,7 @@
 
 use Livewire\Component;
 use Noerd\Facades\Noerd;
-use Noerd\Marketing\Models\Communication;
+use Noerd\Communication\Models\Communication;
 use Noerd\Traits\NoerdList;
 
 new class extends Component {
@@ -16,7 +16,7 @@ new class extends Component {
 
     public function listAction(mixed $modelId = null, array $relations = []): void
     {
-        Noerd::modal('marketing::communication-detail', ['modelId' => $modelId, 'relations' => $relations]);
+        Noerd::modal('communication::communication-detail', ['modelId' => $modelId, 'relations' => $relations]);
     }
 
     public function with(): array

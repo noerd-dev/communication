@@ -4,14 +4,14 @@ use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
-use Noerd\Marketing\Models\MarketingSetting;
-use Noerd\Marketing\Services\TenantSmtpResolver;
+use Noerd\Communication\Models\CommunicationSetting;
+use Noerd\Communication\Services\TenantSmtpResolver;
 use Noerd\Traits\NoerdDetail;
 
 new class extends Component {
     use NoerdDetail;
 
-    public const DETAIL_CLASS = MarketingSetting::class;
+    public const DETAIL_CLASS = CommunicationSetting::class;
 
     public $modelId = null;
 
@@ -29,7 +29,7 @@ new class extends Component {
         $this->initDetail();
         $this->clientId = auth()->user()->selected_tenant_id;
 
-        $settings = MarketingSetting::forTenant($this->clientId);
+        $settings = CommunicationSetting::forTenant($this->clientId);
 
         $this->settingsData = $settings?->toArray() ?? [
             'tenant_id' => $this->clientId,
@@ -46,7 +46,7 @@ new class extends Component {
 
     public function store(): void
     {
-        MarketingSetting::updateOrCreate(
+        CommunicationSetting::updateOrCreate(
             ['tenant_id' => $this->clientId],
             collect($this->settingsData)->except(['id', 'tenant_id', 'created_at', 'updated_at'])->all(),
         );
@@ -86,10 +86,10 @@ new class extends Component {
 
         try {
             app(TenantSmtpResolver::class)->resolve($settings)
-                ->raw(__('This is a test email from the Marketing module.'), function ($message) use ($user, $fromEmail): void {
+                ->raw(__('This is a test email from the Communication module.'), function ($message) use ($user, $fromEmail): void {
                     $message->to($user->email)
                         ->from($fromEmail)
-                        ->subject(__('Marketing Test Email'));
+                        ->subject(__('Communication Test Email'));
                 });
         } catch (\Throwable $e) {
             $this->testEmailError = $e->getMessage();
@@ -103,13 +103,13 @@ new class extends Component {
 
     protected function testEmailCacheKey(): string
     {
-        return 'marketing-test-email-cooldown:' . ($this->clientId ?? 'new') . ':' . auth()->id();
+        return 'communication-test-email-cooldown:' . ($this->clientId ?? 'new') . ':' . auth()->id();
     }
 }; ?>
 
 <x-noerd::page :disableModal="$disableModal">
     <x-slot:header>
-        <x-noerd::modal-title>{{ __('Marketing Settings') }}</x-noerd::modal-title>
+        <x-noerd::modal-title>{{ __('Communication Settings') }}</x-noerd::modal-title>
     </x-slot>
 
     <x-noerd::box>

@@ -1,14 +1,14 @@
 <?php
 
-namespace Noerd\Marketing\Database\Factories;
+namespace Noerd\Communication\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Noerd\Marketing\Models\MarketingSetting;
+use Noerd\Communication\Models\CommunicationSetting;
 use Noerd\Models\Tenant;
 
-class MarketingSettingFactory extends Factory
+class CommunicationSettingFactory extends Factory
 {
-    protected $model = MarketingSetting::class;
+    protected $model = CommunicationSetting::class;
 
     public function definition(): array
     {

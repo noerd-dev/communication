@@ -1,19 +1,19 @@
 <?php
 
-namespace Noerd\Marketing\Providers;
+namespace Noerd\Communication\Providers;
 
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
-use Noerd\Marketing\Commands\Crons\DeleteOldCommunications;
-use Noerd\Marketing\Commands\MarketingInstallCommand;
-use Noerd\Marketing\Commands\MarketingUpdateCommand;
-use Noerd\Marketing\Listeners\LogMessageSentFallback;
-use Noerd\Marketing\Services\Communicator;
-use Noerd\Marketing\Services\TenantSmtpResolver;
+use Noerd\Communication\Commands\Crons\DeleteOldCommunications;
+use Noerd\Communication\Commands\CommunicationInstallCommand;
+use Noerd\Communication\Commands\CommunicationUpdateCommand;
+use Noerd\Communication\Listeners\LogMessageSentFallback;
+use Noerd\Communication\Services\Communicator;
+use Noerd\Communication\Services\TenantSmtpResolver;
 
-class MarketingServiceProvider extends ServiceProvider
+class CommunicationServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
@@ -24,18 +24,18 @@ class MarketingServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
-        $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'marketing');
-        Livewire::addNamespace('marketing', viewPath: __DIR__ . '/../../resources/views/components');
+        $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'communication');
+        Livewire::addNamespace('communication', viewPath: __DIR__ . '/../../resources/views/components');
         Livewire::addLocation(viewPath: __DIR__ . '/../../resources/views/components');
         $this->loadJsonTranslationsFrom(__DIR__ . '/../../resources/lang');
-        $this->loadRoutesFrom(__DIR__ . '/../../routes/marketing-routes.php');
+        $this->loadRoutesFrom(__DIR__ . '/../../routes/communication-routes.php');
 
         Event::listen(MessageSent::class, LogMessageSentFallback::class);
 
         if ($this->app->runningInConsole()) {
             $this->commands([
-                MarketingInstallCommand::class,
-                MarketingUpdateCommand::class,
+                CommunicationInstallCommand::class,
+                CommunicationUpdateCommand::class,
                 DeleteOldCommunications::class,
             ]);
         }

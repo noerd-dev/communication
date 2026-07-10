@@ -1,12 +1,12 @@
 <?php
 
-namespace Noerd\Marketing\Listeners;
+namespace Noerd\Communication\Listeners;
 
 use Illuminate\Mail\Events\MessageSent;
-use Noerd\Marketing\Enums\CommunicationStatus;
-use Noerd\Marketing\Enums\CommunicationType;
-use Noerd\Marketing\Models\Communication;
-use Noerd\Marketing\Services\Communicator;
+use Noerd\Communication\Enums\CommunicationStatus;
+use Noerd\Communication\Enums\CommunicationType;
+use Noerd\Communication\Models\Communication;
+use Noerd\Communication\Services\Communicator;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 
@@ -76,13 +76,13 @@ class LogMessageSentFallback
             return null;
         }
 
-        $value = trim($header->getBodyAsString());
+        $value = mb_trim($header->getBodyAsString());
 
         if ($value === '') {
             return null;
         }
 
-        return trim($value, '<>');
+        return mb_trim($value, '<>');
     }
 
     private function extractBody(Email $message): ?string

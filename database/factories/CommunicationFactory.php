@@ -1,11 +1,11 @@
 <?php
 
-namespace Noerd\Marketing\Database\Factories;
+namespace Noerd\Communication\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Noerd\Marketing\Enums\CommunicationStatus;
-use Noerd\Marketing\Enums\CommunicationType;
-use Noerd\Marketing\Models\Communication;
+use Noerd\Communication\Enums\CommunicationStatus;
+use Noerd\Communication\Enums\CommunicationType;
+use Noerd\Communication\Models\Communication;
 use Noerd\Models\Tenant;
 
 class CommunicationFactory extends Factory

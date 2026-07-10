@@ -1,6 +1,9 @@
 {
-    "Marketing": "Marketing",
+    "Communication": "Kommunikation",
     "Communications": "Kommunikation",
+    "Communication Settings": "Kommunikations-Einstellungen",
+    "Communication Test Email": "Kommunikations-Test-E-Mail",
+    "This is a test email from the Communication module.": "Dies ist eine Test-E-Mail aus dem Kommunikations-Modul.",
     "Communication Details": "Kommunikations-Details",
     "Type": "Typ",
     "Status": "Status",

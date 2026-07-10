@@ -1,13 +1,13 @@
 <?php
 
-namespace Noerd\Marketing\Commands\Crons;
+namespace Noerd\Communication\Commands\Crons;
 
 use Illuminate\Console\Command;
-use Noerd\Marketing\Models\Communication;
+use Noerd\Communication\Models\Communication;
 
 class DeleteOldCommunications extends Command
 {
-    protected $signature = 'marketing:delete-old-communications {--days=30 : Retention period in days}';
+    protected $signature = 'communication:delete-old-communications {--days=30 : Retention period in days}';
 
     protected $description = 'Delete communications older than the given retention period';
 

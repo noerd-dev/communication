@@ -1,6 +1,6 @@
 <?php
 
-namespace Noerd\Marketing\Services;
+namespace Noerd\Communication\Services;
 
 use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Support\Facades\Mail;
@@ -34,7 +34,7 @@ class TenantSmtpResolver
         }
 
         $tenantId = $this->extract($settings, 'tenant_id') ?? 'default';
-        $name = "marketing_tenant_{$tenantId}";
+        $name = "communication_tenant_{$tenantId}";
 
         config()->set("mail.mailers.{$name}", [
             'transport' => 'smtp',

@@ -1,25 +1,25 @@
 <?php
 
-namespace Noerd\Marketing\Services;
+namespace Noerd\Communication\Services;
 
 use Illuminate\Mail\Mailable;
+use Noerd\Communication\Enums\CommunicationStatus;
+use Noerd\Communication\Enums\CommunicationType;
+use Noerd\Communication\Models\Communication;
 use Noerd\Customer\Models\Customer;
-use Noerd\Marketing\Enums\CommunicationStatus;
-use Noerd\Marketing\Enums\CommunicationType;
-use Noerd\Marketing\Models\Communication;
 use Symfony\Component\Mime\Email;
 use Throwable;
 
 class Communicator
 {
-    public const COMMUNICATION_HEADER = 'X-Marketing-Communication-Id';
+    public const COMMUNICATION_HEADER = 'X-Communication-Id';
 
     public function __construct(
         private TenantSmtpResolver $smtpResolver,
     ) {}
 
     /**
-     * Send a Mailable through the central marketing channel and log it to the
+     * Send a Mailable through the central communication channel and log it to the
      * communications table. Re-throws send failures after logging them with
      * status=failed, so existing job retry logic stays intact.
      *
@@ -27,10 +27,10 @@ class Communicator
      * once the framework dispatches the MessageSent event, so this method does
      * not require the Mailable to expose envelope() (legacy build() works too).
      *
-     * @param  string|array<int,string>|Customer|null  $to          Email, list of emails, Customer (extracts email), or null to skip sending
-     * @param  Customer|int|null                       $customer    Explicit customer link; falls back to $to if Customer
-     * @param  object|array|null                       $tenantSettings  Forwarded to TenantSmtpResolver
-     * @param  array<string,mixed>                     $metadata    Extra data persisted as JSON (cc, bcc, headers, ...)
+     * @param  string|array<int,string>|Customer|null  $to  Email, list of emails, Customer (extracts email), or null to skip sending
+     * @param  Customer|int|null  $customer  Explicit customer link; falls back to $to if Customer
+     * @param  object|array|null  $tenantSettings  Forwarded to TenantSmtpResolver
+     * @param  array<string,mixed>  $metadata  Extra data persisted as JSON (cc, bcc, headers, ...)
      */
     public function send(
         Mailable $mailable,

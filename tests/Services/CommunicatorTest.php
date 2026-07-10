@@ -2,19 +2,23 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Mail\PendingMail;
 use Illuminate\Support\Facades\Mail;
+use Noerd\Communication\Enums\CommunicationStatus;
+use Noerd\Communication\Enums\CommunicationType;
+use Noerd\Communication\Models\Communication;
+use Noerd\Communication\Services\Communicator;
+use Noerd\Communication\Services\TenantSmtpResolver;
 use Noerd\Customer\Models\Customer;
-use Noerd\Marketing\Enums\CommunicationStatus;
-use Noerd\Marketing\Enums\CommunicationType;
-use Noerd\Marketing\Models\Communication;
-use Noerd\Marketing\Services\Communicator;
 use Noerd\Models\Tenant;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class);
+uses(TestCase::class);
 uses(RefreshDatabase::class);
 
 class CommunicatorTestMail extends Mailable
@@ -74,14 +78,14 @@ it('accepts a Customer as recipient and auto-resolves customer_id', function ():
 });
 
 it('persists status=failed and rethrows when the mailer throws', function (): void {
-    $mailer = Mockery::mock(\Illuminate\Contracts\Mail\Mailer::class);
-    $pendingMail = Mockery::mock(\Illuminate\Mail\PendingMail::class);
+    $mailer = Mockery::mock(Mailer::class);
+    $pendingMail = Mockery::mock(PendingMail::class);
     $mailer->shouldReceive('to')->andReturn($pendingMail);
     $pendingMail->shouldReceive('send')->andThrow(new RuntimeException('SMTP boom'));
 
-    $resolver = Mockery::mock(\Noerd\Marketing\Services\TenantSmtpResolver::class);
+    $resolver = Mockery::mock(TenantSmtpResolver::class);
     $resolver->shouldReceive('resolve')->andReturn($mailer);
-    app()->instance(\Noerd\Marketing\Services\TenantSmtpResolver::class, $resolver);
+    app()->instance(TenantSmtpResolver::class, $resolver);
 
     $tenant = Tenant::factory()->create();
 

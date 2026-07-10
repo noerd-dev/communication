@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Noerd\Marketing\Models\MarketingSetting;
+use Noerd\Communication\Models\CommunicationSetting;
 
 uses(Tests\TestCase::class);
 uses(RefreshDatabase::class);
@@ -11,7 +11,7 @@ uses(RefreshDatabase::class);
 it('uses the tenant from_email only when use_custom_smtp is active', function (): void {
     config(['mail.from.address' => 'env@example.com']);
 
-    $setting = MarketingSetting::factory()->make([
+    $setting = CommunicationSetting::factory()->make([
         'use_custom_smtp' => true,
         'from_email' => 'tenant@example.com',
     ]);
@@ -22,7 +22,7 @@ it('uses the tenant from_email only when use_custom_smtp is active', function ()
 it('falls back to MAIL_FROM_ADDRESS when use_custom_smtp is inactive', function (): void {
     config(['mail.from.address' => 'env@example.com']);
 
-    $setting = MarketingSetting::factory()->make([
+    $setting = CommunicationSetting::factory()->make([
         'use_custom_smtp' => false,
         'from_email' => 'tenant@example.com',
     ]);
@@ -33,7 +33,7 @@ it('falls back to MAIL_FROM_ADDRESS when use_custom_smtp is inactive', function 
 it('falls back to MAIL_FROM_ADDRESS when use_custom_smtp is active but from_email is empty', function (): void {
     config(['mail.from.address' => 'env@example.com']);
 
-    $setting = MarketingSetting::factory()->make([
+    $setting = CommunicationSetting::factory()->make([
         'use_custom_smtp' => true,
         'from_email' => null,
     ]);
@@ -42,12 +42,12 @@ it('falls back to MAIL_FROM_ADDRESS when use_custom_smtp is active but from_emai
 });
 
 it('returns the reply_email only when use_custom_smtp is active', function (): void {
-    $custom = MarketingSetting::factory()->make([
+    $custom = CommunicationSetting::factory()->make([
         'use_custom_smtp' => true,
         'reply_email' => 'reply@example.com',
     ]);
 
-    $default = MarketingSetting::factory()->make([
+    $default = CommunicationSetting::factory()->make([
         'use_custom_smtp' => false,
         'reply_email' => 'reply@example.com',
     ]);

@@ -5,14 +5,14 @@ declare(strict_types=1);
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
-use Noerd\Marketing\Models\MarketingSetting;
+use Noerd\Communication\Models\CommunicationSetting;
 use Noerd\Models\NoerdUser;
 use Noerd\Models\Tenant;
 
 uses(Tests\TestCase::class);
 uses(RefreshDatabase::class);
 
-function actingAsMarketingUser(): NoerdUser
+function actingAsCommunicationUser(): NoerdUser
 {
     $tenant = Tenant::factory()->create();
     $user = NoerdUser::factory()->create(['selected_tenant_id' => $tenant->id]);
@@ -22,16 +22,16 @@ function actingAsMarketingUser(): NoerdUser
     return $user;
 }
 
-it('renders the marketing-settings route', function (): void {
-    actingAsMarketingUser();
+it('renders the communication-settings route', function (): void {
+    actingAsCommunicationUser();
 
-    $this->get('/marketing-settings')->assertStatus(200);
+    $this->get('/communication-settings')->assertStatus(200);
 });
 
-it('persists marketing settings on save', function (): void {
-    $user = actingAsMarketingUser();
+it('persists communication settings on save', function (): void {
+    $user = actingAsCommunicationUser();
 
-    Livewire::test('marketing::marketing-settings-detail')
+    Livewire::test('communication::communication-settings-detail')
         ->set('settingsData.from_email', 'from@example.com')
         ->set('settingsData.reply_email', 'reply@example.com')
         ->set('settingsData.use_custom_smtp', true)
@@ -43,7 +43,7 @@ it('persists marketing settings on save', function (): void {
         ->call('store')
         ->assertSet('showSuccessIndicator', true);
 
-    $saved = MarketingSetting::forTenant($user->selected_tenant_id);
+    $saved = CommunicationSetting::forTenant($user->selected_tenant_id);
     expect($saved)->not->toBeNull();
     expect($saved->from_email)->toBe('from@example.com');
     expect($saved->use_custom_smtp)->toBeTrue();
@@ -53,11 +53,11 @@ it('persists marketing settings on save', function (): void {
 
 it('sends a test email to the logged-in user', function (): void {
     config(['mail.default' => 'array']);
-    $user = actingAsMarketingUser();
+    $user = actingAsCommunicationUser();
     app('mail.manager')->forgetMailers();
     Cache::flush();
 
-    Livewire::test('marketing::marketing-settings-detail')
+    Livewire::test('communication::communication-settings-detail')
         ->call('sendTestEmail')
         ->assertSet('testEmailError', null)
         ->assertSet('testEmailMessage', __('Test email sent to :email', ['email' => $user->email]));
@@ -68,11 +68,11 @@ it('sends a test email to the logged-in user', function (): void {
 });
 
 it('rate-limits the test email to once per minute', function (): void {
-    $user = actingAsMarketingUser();
+    $user = actingAsCommunicationUser();
     app('mail.manager')->forgetMailers();
     Cache::flush();
 
-    $component = Livewire::test('marketing::marketing-settings-detail');
+    $component = Livewire::test('communication::communication-settings-detail');
     $component->call('sendTestEmail')
         ->assertSet('testEmailMessage', __('Test email sent to :email', ['email' => $user->email]));
     $component->call('sendTestEmail')
