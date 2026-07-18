@@ -2,10 +2,10 @@
     "name": "noerd/communication",
     "description": "Communication module for noerd platform — central email sending and communications log",
     "type": "library",
-    "version": "v0.1.5",
+    "version": "v0.1.6",
     "license": "proprietary",
     "require": {
-        "noerd/noerd": "^0.6",
+        "noerd/noerd": "^0.6 || ^0.7",
         "noerd/customer": "^0.1"
     },
     "autoload": {
