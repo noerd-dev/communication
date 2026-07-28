@@ -11,7 +11,7 @@ use Noerd\Traits\NoerdDetail;
 new class extends Component {
     use NoerdDetail;
 
-    public const DETAIL_CLASS = CommunicationSetting::class;
+    public $detailModel = CommunicationSetting::class;
 
     public $modelId = null;
 

@@ -8,22 +8,10 @@ use Noerd\Traits\NoerdDetail;
 new class extends Component {
     use NoerdDetail;
 
-    public const DETAIL_CLASS = Communication::class;
+    public $detailModel = Communication::class;
 
     #[Url(as: 'communicationId', keep: false, except: '')]
     public $modelId = null;
-
-    public function mount(): void
-    {
-        $this->initDetail();
-
-        if ($this->modelId) {
-            $communication = Communication::find($this->modelId);
-            if ($communication) {
-                $this->detailData = $communication->toArray();
-            }
-        }
-    }
 };
 ?>
 

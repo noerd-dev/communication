@@ -5,8 +5,8 @@
     "version": "v0.2.0",
     "license": "proprietary",
     "require": {
-        "noerd/noerd": "^0.7.2",
-        "noerd/customer": "^0.1 || ^0.2"
+        "noerd/noerd": "^0.8",
+        "noerd/customer": "^0.1 || ^0.2 || ^0.3"
     },
     "autoload": {
         "psr-4": {
