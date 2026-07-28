@@ -1,31 +1,19 @@
 <?php
 
 use Livewire\Component;
-use Noerd\Facades\Noerd;
 use Noerd\Communication\Models\Communication;
 use Noerd\Traits\NoerdList;
 
 new class extends Component {
     use NoerdList;
 
+    public $listModel = Communication::class;
+    public $detailComponent = 'communication::communication-detail';
+
     public function mount(): void
     {
         $this->mountList();
         $this->setDefaultSort('sent_at', false);
-    }
-
-    public function listAction(mixed $modelId = null, array $relations = []): void
-    {
-        Noerd::modal('communication::communication-detail', ['modelId' => $modelId, 'relations' => $relations]);
-    }
-
-    public function with(): array
-    {
-        $rows = $this->listQuery(Communication::class)->paginate($this->perPage);
-
-        return [
-            'listConfig' => $this->buildList($rows),
-        ];
     }
 
     public function rendering()
