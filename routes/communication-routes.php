@@ -8,6 +8,6 @@ Route::group(['middleware' => ['auth', 'verified', 'web']], function (): void {
     Route::livewire('communication-settings', 'communication::communication-settings-detail')->name('communication.settings');
 
     Route::redirect('/sent-mails', '/communications', 301);
-    Route::get('/sent-mail/{mail}', fn ($mail) => redirect("/communication/{$mail}", 301));
+    Route::get('/sent-mail/{mail}', fn($mail) => redirect("/communication/{$mail}", 301));
     Route::redirect('/marketing-settings', '/communication-settings', 301);
 });

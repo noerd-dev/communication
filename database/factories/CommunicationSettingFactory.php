@@ -27,7 +27,7 @@ class CommunicationSettingFactory extends Factory
 
     public function withSmtp(string $host = 'smtp.example.com', string $username = 'user@example.com'): static
     {
-        return $this->state(fn () => [
+        return $this->state(fn() => [
             'smtp_host' => $host,
             'smtp_port' => 587,
             'smtp_encryption' => 'tls',
