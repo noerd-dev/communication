@@ -31,7 +31,7 @@ it('renders the communication-settings route', function (): void {
 it('persists communication settings on save', function (): void {
     $user = actingAsCommunicationUser();
 
-    Livewire::test('communication::communication-settings-detail')
+    Livewire::test('communication::communication-settings-page')
         ->set('settingsData.from_email', 'from@example.com')
         ->set('settingsData.reply_email', 'reply@example.com')
         ->set('settingsData.use_custom_smtp', true)
@@ -57,7 +57,7 @@ it('sends a test email to the logged-in user', function (): void {
     app('mail.manager')->forgetMailers();
     Cache::flush();
 
-    Livewire::test('communication::communication-settings-detail')
+    Livewire::test('communication::communication-settings-page')
         ->call('sendTestEmail')
         ->assertSet('testEmailError', null)
         ->assertSet('testEmailMessage', __('Test email sent to :email', ['email' => $user->email]));
@@ -72,7 +72,7 @@ it('rate-limits the test email to once per minute', function (): void {
     app('mail.manager')->forgetMailers();
     Cache::flush();
 
-    $component = Livewire::test('communication::communication-settings-detail');
+    $component = Livewire::test('communication::communication-settings-page');
     $component->call('sendTestEmail')
         ->assertSet('testEmailMessage', __('Test email sent to :email', ['email' => $user->email]));
     $component->call('sendTestEmail')
