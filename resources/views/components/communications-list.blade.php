@@ -8,7 +8,7 @@ new class extends Component {
     use NoerdList;
 
     public $listModel = Communication::class;
-    public $detailComponent = 'communication::communication-detail';
+    public ?string $detailRoute = 'communication.detail';
 
     public function mount(): void
     {
