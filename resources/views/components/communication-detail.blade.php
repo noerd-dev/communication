@@ -1,6 +1,5 @@
 <?php
 
-use Livewire\Attributes\Url;
 use Livewire\Component;
 use Noerd\Communication\Models\Communication;
 use Noerd\Traits\NoerdDetail;
@@ -10,8 +9,7 @@ new class extends Component {
 
     public $detailModel = Communication::class;
 
-    #[Url(as: 'communicationId', keep: false, except: '')]
-    public $modelId = null;
+    public ?string $detailPrimary = 'communicationId';
 };
 ?>
 

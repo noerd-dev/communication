@@ -13,8 +13,6 @@ new class extends Component {
 
     public $detailModel = CommunicationSetting::class;
 
-    public $modelId = null;
-
     #[Locked]
     public ?int $clientId = null;
 
