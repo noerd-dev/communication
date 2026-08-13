@@ -10,10 +10,24 @@ new class extends Component {
     public $listModel = Communication::class;
     public ?string $detailRoute = 'communication.detail';
 
+    public ?string $modelType = null;
+    public ?int $modelId = null;
+
     public function mount(): void
     {
         $this->mountList();
         $this->setDefaultSort('sent_at', false);
+    }
+
+    public function listData(): array
+    {
+        $rows = $this->listQuery($this->listModel)
+            ->when($this->modelType && $this->modelId, fn ($query) => $query
+                ->where('model_type', $this->modelType)
+                ->where('model_id', $this->modelId))
+            ->paginate($this->perPage);
+
+        return $this->buildList($rows);
     }
 
     public function rendering()

@@ -123,3 +123,32 @@ it('allows nullable customer', function (): void {
 
     expect($communication->customer_id)->toBeNull();
 });
+
+it('stores a polymorphic model link when a model is passed', function (): void {
+    Mail::fake();
+
+    $tenant = Tenant::factory()->create();
+    $customer = Customer::factory()->create(['tenant_id' => $tenant->id]);
+
+    $communication = app(Communicator::class)->send(
+        mailable: new CommunicatorTestMail(),
+        to: 'foo@example.com',
+        customer: $customer,
+        model: $customer,
+    );
+
+    expect($communication->model_type)->toBe($customer->getMorphClass());
+    expect($communication->model_id)->toBe($customer->id);
+});
+
+it('leaves the model link empty when no model is passed', function (): void {
+    Mail::fake();
+
+    $communication = app(Communicator::class)->send(
+        mailable: new CommunicatorTestMail(),
+        to: 'foo@example.com',
+    );
+
+    expect($communication->model_type)->toBeNull();
+    expect($communication->model_id)->toBeNull();
+});

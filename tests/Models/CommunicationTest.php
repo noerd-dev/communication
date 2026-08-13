@@ -43,3 +43,20 @@ it('relates to a customer (nullable)', function (): void {
     $withoutCustomer = Communication::factory()->create(['customer_id' => null]);
     expect($withoutCustomer->customer)->toBeNull();
 });
+
+it('resolves the linked record via the polymorphic model relation', function (): void {
+    $tenant = Tenant::factory()->create();
+    $customer = Customer::factory()->create(['tenant_id' => $tenant->id]);
+
+    $communication = Communication::factory()->create([
+        'tenant_id' => $tenant->id,
+        'model_type' => $customer->getMorphClass(),
+        'model_id' => $customer->id,
+    ]);
+
+    expect($communication->model)->toBeInstanceOf(Customer::class);
+    expect($communication->model->id)->toBe($customer->id);
+
+    $unlinked = Communication::factory()->create();
+    expect($unlinked->model)->toBeNull();
+});

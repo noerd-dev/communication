@@ -5,6 +5,7 @@ namespace Noerd\Communication\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Noerd\Communication\Database\Factories\CommunicationFactory;
 use Noerd\Communication\Enums\CommunicationStatus;
 use Noerd\Communication\Enums\CommunicationType;
@@ -21,6 +22,11 @@ class Communication extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function model(): MorphTo
+    {
+        return $this->morphTo('model');
     }
 
     protected static function newFactory(): CommunicationFactory

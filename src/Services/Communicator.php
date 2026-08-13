@@ -2,6 +2,7 @@
 
 namespace Noerd\Communication\Services;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Mail\Mailable;
 use Noerd\Communication\Enums\CommunicationStatus;
 use Noerd\Communication\Enums\CommunicationType;
@@ -31,6 +32,7 @@ class Communicator
      * @param  Customer|int|null  $customer  Explicit customer link; falls back to $to if Customer
      * @param  object|array|null  $tenantSettings  Forwarded to TenantSmtpResolver
      * @param  array<string,mixed>  $metadata  Extra data persisted as JSON (cc, bcc, headers, ...)
+     * @param  Model|null  $model  Source record this mail belongs to (stored polymorphically)
      */
     public function send(
         Mailable $mailable,
@@ -39,6 +41,7 @@ class Communicator
         mixed $tenantSettings = null,
         array $metadata = [],
         bool $queue = false,
+        ?Model $model = null,
     ): ?Communication {
         $recipients = $this->resolveRecipients($to);
 
@@ -52,6 +55,8 @@ class Communicator
         $communication = Communication::create([
             'tenant_id' => $tenantId,
             'customer_id' => $resolvedCustomer instanceof Customer ? $resolvedCustomer->id : $resolvedCustomer,
+            'model_type' => $model?->getMorphClass(),
+            'model_id' => $model?->getKey(),
             'type' => CommunicationType::Email,
             'status' => $queue ? CommunicationStatus::Queued : CommunicationStatus::Sent,
             'to' => implode(', ', $recipients),
