@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::group(['middleware' => ['auth', 'verified', 'web']], function (): void {
+Route::group(['middleware' => ['noerd']], function (): void {
     Route::livewire('communications', 'communication::communications-list')->name('communications');
     Route::livewire('communication/{modelId}', 'communication::communication-detail')->name('communication.detail');
     Route::livewire('communication-settings', 'communication::communication-settings-page')->name('communication.settings');
