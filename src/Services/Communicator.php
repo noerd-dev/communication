@@ -7,7 +7,6 @@ use Illuminate\Mail\Mailable;
 use Noerd\Communication\Enums\CommunicationStatus;
 use Noerd\Communication\Enums\CommunicationType;
 use Noerd\Communication\Models\Communication;
-use Noerd\Customer\Models\Customer;
 use Symfony\Component\Mime\Email;
 use Throwable;
 
@@ -28,16 +27,16 @@ class Communicator
      * once the framework dispatches the MessageSent event, so this method does
      * not require the Mailable to expose envelope() (legacy build() works too).
      *
-     * @param  string|array<int,string>|Customer|null  $to  Email, list of emails, Customer (extracts email), or null to skip sending
-     * @param  Customer|int|null  $customer  Explicit customer link; falls back to $to if Customer
+     * @param  string|array<int,string>|Model|null  $to  Email, list of emails, a record carrying an `email` attribute, or null to skip sending
+     * @param  Model|null  $contact  The record this mail concerns; falls back to $to when that is a record
      * @param  object|array|null  $tenantSettings  Forwarded to TenantSmtpResolver
      * @param  array<string,mixed>  $metadata  Extra data persisted as JSON (cc, bcc, headers, ...)
      * @param  Model|null  $model  Source record this mail belongs to (stored polymorphically)
      */
     public function send(
         Mailable $mailable,
-        string|array|Customer|null $to,
-        Customer|int|null $customer = null,
+        string|array|Model|null $to,
+        ?Model $contact = null,
         mixed $tenantSettings = null,
         array $metadata = [],
         bool $queue = false,
@@ -49,12 +48,13 @@ class Communicator
             return null;
         }
 
-        $resolvedCustomer = $this->resolveCustomer($customer, $to);
-        $tenantId = $this->resolveTenantId($tenantSettings, $resolvedCustomer);
+        $resolvedContact = $this->resolveContact($contact, $to);
+        $tenantId = $this->resolveTenantId($tenantSettings, $resolvedContact);
 
         $communication = Communication::create([
             'tenant_id' => $tenantId,
-            'customer_id' => $resolvedCustomer instanceof Customer ? $resolvedCustomer->id : $resolvedCustomer,
+            'contact_type' => $resolvedContact?->getMorphClass(),
+            'contact_id' => $resolvedContact?->getKey(),
             'model_type' => $model?->getMorphClass(),
             'model_id' => $model?->getKey(),
             'type' => CommunicationType::Email,
@@ -91,14 +91,14 @@ class Communicator
     /**
      * @return array<int,string>
      */
-    private function resolveRecipients(string|array|Customer|null $to): array
+    private function resolveRecipients(string|array|Model|null $to): array
     {
         if ($to === null) {
             return [];
         }
 
-        if ($to instanceof Customer) {
-            return array_values(array_filter([$to->email]));
+        if ($to instanceof Model) {
+            return array_values(array_filter([$to->getAttribute('email')]));
         }
 
         if (is_array($to)) {
@@ -108,16 +108,16 @@ class Communicator
         return $to === '' ? [] : [$to];
     }
 
-    private function resolveCustomer(Customer|int|null $customer, string|array|Customer|null $to): Customer|int|null
+    private function resolveContact(?Model $contact, string|array|Model|null $to): ?Model
     {
-        if ($customer !== null) {
-            return $customer;
+        if ($contact !== null) {
+            return $contact;
         }
 
-        return $to instanceof Customer ? $to : null;
+        return $to instanceof Model ? $to : null;
     }
 
-    private function resolveTenantId(mixed $tenantSettings, Customer|int|null $customer): ?int
+    private function resolveTenantId(mixed $tenantSettings, ?Model $contact): ?int
     {
         if (is_array($tenantSettings) && isset($tenantSettings['tenant_id'])) {
             return (int) $tenantSettings['tenant_id'];
@@ -127,8 +127,8 @@ class Communicator
             return (int) $tenantSettings->tenant_id;
         }
 
-        if ($customer instanceof Customer && $customer->tenant_id) {
-            return (int) $customer->tenant_id;
+        if ($contact?->getAttribute('tenant_id')) {
+            return (int) $contact->getAttribute('tenant_id');
         }
 
         if (auth()->check() && (auth()->user()->selected_tenant_id ?? null)) {

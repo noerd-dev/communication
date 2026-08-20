@@ -54,7 +54,6 @@ class LogMessageSentFallback
     {
         Communication::create([
             'tenant_id' => null,
-            'customer_id' => null,
             'type' => CommunicationType::Email,
             'status' => CommunicationStatus::Sent,
             'from' => $this->firstAddress($message->getFrom()),

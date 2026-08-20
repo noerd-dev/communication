@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Noerd\Communication\Models\Communication;
-use Noerd\Customer\Models\Customer;
 use Noerd\Helpers\TenantHelper;
 use Noerd\Models\NoerdUser;
 use Noerd\Models\Tenant;
@@ -42,13 +41,13 @@ function actingAsCommunicationsListUser(): NoerdUser
 
 it('filters the list by the polymorphic model link', function (): void {
     $user = actingAsCommunicationsListUser();
-    $customer = Customer::factory()->create(['tenant_id' => $user->selected_tenant_id]);
+    $linked = NoerdUser::factory()->create(['selected_tenant_id' => $user->selected_tenant_id]);
 
     Communication::factory()->create([
         'tenant_id' => $user->selected_tenant_id,
         'subject' => 'Linked mail subject',
-        'model_type' => $customer->getMorphClass(),
-        'model_id' => $customer->id,
+        'model_type' => $linked->getMorphClass(),
+        'model_id' => $linked->id,
     ]);
     Communication::factory()->create([
         'tenant_id' => $user->selected_tenant_id,
@@ -56,8 +55,8 @@ it('filters the list by the polymorphic model link', function (): void {
     ]);
 
     Livewire::test('communication::communications-list', [
-        'modelType' => $customer->getMorphClass(),
-        'modelId' => $customer->id,
+        'modelType' => $linked->getMorphClass(),
+        'modelId' => $linked->id,
     ])
         ->assertSee('Linked mail subject')
         ->assertDontSee('Unlinked mail subject');
@@ -65,13 +64,13 @@ it('filters the list by the polymorphic model link', function (): void {
 
 it('shows all rows when no model filter is set', function (): void {
     $user = actingAsCommunicationsListUser();
-    $customer = Customer::factory()->create(['tenant_id' => $user->selected_tenant_id]);
+    $linked = NoerdUser::factory()->create(['selected_tenant_id' => $user->selected_tenant_id]);
 
     Communication::factory()->create([
         'tenant_id' => $user->selected_tenant_id,
         'subject' => 'Linked mail subject',
-        'model_type' => $customer->getMorphClass(),
-        'model_id' => $customer->id,
+        'model_type' => $linked->getMorphClass(),
+        'model_id' => $linked->id,
     ]);
     Communication::factory()->create([
         'tenant_id' => $user->selected_tenant_id,

@@ -19,6 +19,5 @@
     "Sent": "Versendet",
     "Failed": "Fehlgeschlagen",
     "Queued": "In Warteschlange",
-    "Customer": "Kunde",
     "Use own SMTP server": "Eigenen SMTP-Server verwenden"
 }

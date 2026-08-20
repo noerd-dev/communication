@@ -6,7 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Noerd\Communication\Enums\CommunicationStatus;
 use Noerd\Communication\Enums\CommunicationType;
 use Noerd\Communication\Models\Communication;
-use Noerd\Customer\Models\Customer;
+use Noerd\Models\NoerdUser;
 use Noerd\Models\Tenant;
 use Tests\TestCase;
 
@@ -28,35 +28,54 @@ it('supports the failed state', function (): void {
     expect($communication->sent_at)->toBeNull();
 });
 
-it('relates to a customer (nullable)', function (): void {
+it('resolves the contact link polymorphically (nullable)', function (): void {
     $tenant = Tenant::factory()->create();
-    $customer = Customer::factory()->create(['tenant_id' => $tenant->id]);
+    $contact = NoerdUser::factory()->create(['selected_tenant_id' => $tenant->id]);
 
     $communication = Communication::factory()->create([
         'tenant_id' => $tenant->id,
-        'customer_id' => $customer->id,
+        'contact_type' => $contact->getMorphClass(),
+        'contact_id' => $contact->id,
     ]);
 
-    expect($communication->customer)->toBeInstanceOf(Customer::class);
-    expect($communication->customer->id)->toBe($customer->id);
+    expect($communication->contact)->toBeInstanceOf(NoerdUser::class);
+    expect($communication->contact->id)->toBe($contact->id);
 
-    $withoutCustomer = Communication::factory()->create(['customer_id' => null]);
-    expect($withoutCustomer->customer)->toBeNull();
+    $withoutContact = Communication::factory()->create();
+    expect($withoutContact->contact)->toBeNull();
 });
 
 it('resolves the linked record via the polymorphic model relation', function (): void {
     $tenant = Tenant::factory()->create();
-    $customer = Customer::factory()->create(['tenant_id' => $tenant->id]);
+    $source = NoerdUser::factory()->create(['selected_tenant_id' => $tenant->id]);
 
     $communication = Communication::factory()->create([
         'tenant_id' => $tenant->id,
-        'model_type' => $customer->getMorphClass(),
-        'model_id' => $customer->id,
+        'model_type' => $source->getMorphClass(),
+        'model_id' => $source->id,
     ]);
 
-    expect($communication->model)->toBeInstanceOf(Customer::class);
-    expect($communication->model->id)->toBe($customer->id);
+    expect($communication->model)->toBeInstanceOf(NoerdUser::class);
+    expect($communication->model->id)->toBe($source->id);
 
     $unlinked = Communication::factory()->create();
     expect($unlinked->model)->toBeNull();
+});
+
+it('keeps the model and contact links independent of each other', function (): void {
+    $tenant = Tenant::factory()->create();
+    $source = NoerdUser::factory()->create(['selected_tenant_id' => $tenant->id]);
+    $contact = NoerdUser::factory()->create(['selected_tenant_id' => $tenant->id]);
+
+    $communication = Communication::factory()->create([
+        'tenant_id' => $tenant->id,
+        'model_type' => $source->getMorphClass(),
+        'model_id' => $source->id,
+        'contact_type' => $contact->getMorphClass(),
+        'contact_id' => $contact->id,
+    ]);
+
+    expect($communication->model->id)->toBe($source->id);
+    expect($communication->contact->id)->toBe($contact->id);
+    expect($communication->model->id)->not->toBe($communication->contact->id);
 });

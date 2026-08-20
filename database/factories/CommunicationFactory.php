@@ -16,7 +16,6 @@ class CommunicationFactory extends Factory
     {
         return [
             'tenant_id' => Tenant::factory(),
-            'customer_id' => null,
             'type' => CommunicationType::Email,
             'status' => CommunicationStatus::Sent,
             'from' => $this->faker->safeEmail(),
