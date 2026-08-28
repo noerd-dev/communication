@@ -13,8 +13,7 @@ use Illuminate\Support\Facades\Schema;
  *   model_type/model_id     — the source record the mail was generated from
  *   contact_type/contact_id — the record the mail concerns
  */
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         if (Schema::hasTable('communications')) {

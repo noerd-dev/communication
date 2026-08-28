@@ -16,8 +16,7 @@ use Illuminate\Support\Facades\Schema;
  * only the modules that wrote those rows know which record the id refers to, so they ship
  * their own backfill (see liefertool and booking-members).
  */
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         if (! Schema::hasTable('communications')) {

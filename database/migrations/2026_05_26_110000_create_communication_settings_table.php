@@ -12,8 +12,7 @@ use Illuminate\Support\Facades\Schema;
  * SMTP data. Creating an empty table here would orphan it, because this file sorts before
  * the rename.
  */
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         if (Schema::hasTable('communication_settings') || Schema::hasTable('marketing_settings')) {
