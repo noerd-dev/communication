@@ -5,78 +5,42 @@ declare(strict_types=1);
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Noerd\Communication\Models\Communication;
-use Noerd\Helpers\TenantHelper;
+use Noerd\Communication\Tests\Traits\CreatesCommunicationUser;
 use Noerd\Models\NoerdUser;
-use Noerd\Models\Tenant;
-use Noerd\Models\TenantApp;
 use Tests\TestCase;
 
 uses(TestCase::class);
 uses(RefreshDatabase::class);
+uses(CreatesCommunicationUser::class);
 
-function actingAsCommunicationsListUser(): NoerdUser
-{
-    $tenant = Tenant::factory()->create();
-    $user = NoerdUser::factory()->create(['selected_tenant_id' => $tenant->id]);
-    $tenant->users()->attach($user->id);
+beforeEach(function (): void {
+    $user = $this->withCommunicationModule();
+    $this->actingAs($user);
 
-    TenantHelper::setSelectedTenantId($tenant->id);
-    TenantHelper::setSelectedApp('COMMUNICATION');
-
-    $app = TenantApp::firstOrCreate(
-        ['name' => 'COMMUNICATION'],
-        [
-            'title' => 'Communication',
-            'icon' => 'communication::icons.app',
-            'route' => 'communications',
-            'is_active' => true,
-        ],
-    );
-    $tenant->tenantApps()->syncWithoutDetaching([$app->id]);
-
-    test()->actingAs($user);
-
-    return $user;
-}
-
-it('filters the list by the polymorphic model link', function (): void {
-    $user = actingAsCommunicationsListUser();
-    $linked = NoerdUser::factory()->create(['selected_tenant_id' => $user->selected_tenant_id]);
+    $this->linked = NoerdUser::factory()->create(['selected_tenant_id' => $user->selected_tenant_id]);
 
     Communication::factory()->create([
         'tenant_id' => $user->selected_tenant_id,
         'subject' => 'Linked mail subject',
-        'model_type' => $linked->getMorphClass(),
-        'model_id' => $linked->id,
+        'model_type' => $this->linked->getMorphClass(),
+        'model_id' => $this->linked->id,
     ]);
     Communication::factory()->create([
         'tenant_id' => $user->selected_tenant_id,
         'subject' => 'Unlinked mail subject',
     ]);
+});
 
+it('filters the list by the polymorphic model link', function (): void {
     Livewire::test('communication::communications-list', [
-        'modelType' => $linked->getMorphClass(),
-        'modelId' => $linked->id,
+        'modelType' => $this->linked->getMorphClass(),
+        'modelId' => $this->linked->id,
     ])
         ->assertSee('Linked mail subject')
         ->assertDontSee('Unlinked mail subject');
 });
 
 it('shows all rows when no model filter is set', function (): void {
-    $user = actingAsCommunicationsListUser();
-    $linked = NoerdUser::factory()->create(['selected_tenant_id' => $user->selected_tenant_id]);
-
-    Communication::factory()->create([
-        'tenant_id' => $user->selected_tenant_id,
-        'subject' => 'Linked mail subject',
-        'model_type' => $linked->getMorphClass(),
-        'model_id' => $linked->id,
-    ]);
-    Communication::factory()->create([
-        'tenant_id' => $user->selected_tenant_id,
-        'subject' => 'Unlinked mail subject',
-    ]);
-
     Livewire::test('communication::communications-list')
         ->assertSee('Linked mail subject')
         ->assertSee('Unlinked mail subject');

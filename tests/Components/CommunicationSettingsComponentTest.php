@@ -6,30 +6,22 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
 use Noerd\Communication\Models\CommunicationSetting;
-use Noerd\Models\NoerdUser;
-use Noerd\Models\Tenant;
+use Noerd\Communication\Tests\Traits\CreatesCommunicationUser;
 
 uses(Tests\TestCase::class);
 uses(RefreshDatabase::class);
-
-function actingAsCommunicationUser(): NoerdUser
-{
-    $tenant = Tenant::factory()->create();
-    $user = NoerdUser::factory()->create(['selected_tenant_id' => $tenant->id]);
-    $tenant->users()->attach($user->id);
-    test()->actingAs($user);
-
-    return $user;
-}
+uses(CreatesCommunicationUser::class);
 
 it('renders the communication-settings route', function (): void {
-    actingAsCommunicationUser();
+    $user = $this->withCommunicationModule();
+    $this->actingAs($user);
 
     $this->get('/communication-settings')->assertStatus(200);
 });
 
 it('persists communication settings on save', function (): void {
-    $user = actingAsCommunicationUser();
+    $user = $this->withCommunicationModule();
+    $this->actingAs($user);
 
     Livewire::test('communication::communication-settings-page')
         ->set('settingsData.from_email', 'from@example.com')
@@ -53,7 +45,8 @@ it('persists communication settings on save', function (): void {
 
 it('sends a test email to the logged-in user', function (): void {
     config(['mail.default' => 'array']);
-    $user = actingAsCommunicationUser();
+    $user = $this->withCommunicationModule();
+    $this->actingAs($user);
     app('mail.manager')->forgetMailers();
     Cache::flush();
 
@@ -68,7 +61,8 @@ it('sends a test email to the logged-in user', function (): void {
 });
 
 it('rate-limits the test email to once per minute', function (): void {
-    $user = actingAsCommunicationUser();
+    $user = $this->withCommunicationModule();
+    $this->actingAs($user);
     app('mail.manager')->forgetMailers();
     Cache::flush();
 
