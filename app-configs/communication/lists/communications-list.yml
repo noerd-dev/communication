@@ -1,4 +1,6 @@
 title: Communications
+defaultSort:
+  field: sent_at
 disableSearch: false
 columns:
   - field: sent_at

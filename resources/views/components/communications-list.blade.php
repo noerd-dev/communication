@@ -13,12 +13,6 @@ new class extends Component {
     public ?string $modelType = null;
     public ?int $modelId = null;
 
-    public function mount(): void
-    {
-        $this->mountList();
-        $this->setDefaultSort('sent_at', false);
-    }
-
     public function listData(): array
     {
         $rows = $this->listQuery($this->listModel)
