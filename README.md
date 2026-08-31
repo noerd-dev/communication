@@ -44,6 +44,13 @@ neither column carries a foreign key.
 
 ## Installation
 
-1. `composer require noerd/communication`
-2. `php artisan migrate`
-3. `php artisan noerd:install-communication`
+```bash
+composer require noerd/communication
+php artisan noerd:install-communication
+```
+
+`noerd:install-communication` copies the YAML configs into `app-configs/communication/`, registers
+the tenant app and runs the module migrations (confirmation prompt).
+
+Run `php artisan noerd:update-communication` after upgrading the package (idempotent, also covered
+by `noerd:update-all`).
