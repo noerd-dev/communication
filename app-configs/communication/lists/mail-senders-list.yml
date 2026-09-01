@@ -1,0 +1,24 @@
+title: Senders
+actions:
+  - label: New Sender
+    route: mail-sender.detail
+description: 'Outgoing sender accounts. The default account provides the from and reply address for all mail of this tenant; without SMTP credentials it relays through the platform mail server.'
+defaultSort:
+  field: name
+  direction: asc
+disableSearch: false
+columns:
+  - field: name
+    label: Name
+  - field: from_email
+    label: From Email
+  - field: reply_email
+    label: Reply Email
+  - field: smtp_host
+    label: SMTP Host
+  - field: is_default
+    label: Default
+    type: boolean
+  - field: is_active
+    label: 'Active?'
+    type: boolean

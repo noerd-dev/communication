@@ -1,0 +1,62 @@
+title: Sender
+description: ''
+actions:
+  - label: Send test email
+    action: sendTestEmail
+    heroicon: paper-airplane
+    loading: Sending...
+fields:
+  - name: detailData.name
+    label: Name
+    type: text
+    colspan: 6
+    required: true
+  - name: detailData.is_default
+    label: Default
+    type: checkbox
+    colspan: 3
+  - name: detailData.is_active
+    label: 'Active?'
+    type: checkbox
+    colspan: 3
+  - name: detailData.from_email
+    label: From Email
+    type: email
+    colspan: 6
+    required: true
+  - name: detailData.reply_email
+    label: Reply Email
+    type: email
+    colspan: 6
+  - type: block
+    title: SMTP
+    description: Leave blank to send through the platform default mail server.
+    colspan: 12
+    fields:
+      - name: detailData.smtp_host
+        label: SMTP Host
+        type: text
+        colspan: 6
+      - name: detailData.smtp_port
+        label: SMTP Port
+        type: number
+        colspan: 3
+      - name: detailData.smtp_encryption
+        label: SMTP Encryption
+        type: select
+        colspan: 3
+        options:
+          - value: ''
+            label: None
+          - value: tls
+            label: TLS
+          - value: ssl
+            label: SSL
+      - name: detailData.smtp_username
+        label: SMTP Username
+        type: text
+        colspan: 6
+      - name: detailData.smtp_password
+        label: SMTP Password
+        type: password
+        colspan: 6

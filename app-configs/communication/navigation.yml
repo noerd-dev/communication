@@ -8,6 +8,6 @@
         - title: Communications
           route: communications
           heroicon: envelope
-        - title: Settings
-          route: communication.settings
-          heroicon: cog-6-tooth
+        - title: Senders
+          route: mail-senders
+          heroicon: at-symbol

@@ -213,3 +213,21 @@ it('leaves the model link empty when no model is passed', function (): void {
     expect($communication->model_type)->toBeNull();
     expect($communication->model_id)->toBeNull();
 });
+
+it('routes through an explicit sender account and stamps its tenant', function (): void {
+    $tenant = Tenant::factory()->create();
+    $sender = \Noerd\Communication\Models\MailSender::factory()->create(['tenant_id' => $tenant->id]);
+
+    $resolver = Mockery::mock(TenantSmtpResolver::class);
+    $resolver->shouldReceive('resolveForSender')->once()->with($sender)->andReturn(Mail::mailer());
+    $resolver->shouldNotReceive('resolve');
+
+    $communication = (new Communicator($resolver))->send(
+        mailable: new CommunicatorTestMail(),
+        to: 'someone@example.com',
+        sender: $sender,
+    );
+
+    expect($communication->tenant_id)->toBe($tenant->id)
+        ->and($communication->metadata['mail_sender_id'])->toBe($sender->id);
+});

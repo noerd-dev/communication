@@ -7,6 +7,7 @@ use Illuminate\Mail\Mailable;
 use Noerd\Communication\Enums\CommunicationStatus;
 use Noerd\Communication\Enums\CommunicationType;
 use Noerd\Communication\Models\Communication;
+use Noerd\Communication\Models\MailSender;
 use Symfony\Component\Mime\Email;
 use Throwable;
 
@@ -32,6 +33,7 @@ class Communicator
      * @param  object|array|null  $tenantSettings  Forwarded to TenantSmtpResolver
      * @param  array<string,mixed>  $metadata  Extra data persisted as JSON (cc, bcc, headers, ...)
      * @param  Model|null  $model  Source record this mail belongs to (stored polymorphically)
+     * @param  MailSender|null  $sender  Explicit sender account; wins over the tenant's default
      */
     public function send(
         Mailable $mailable,
@@ -41,6 +43,7 @@ class Communicator
         array $metadata = [],
         bool $queue = false,
         ?Model $model = null,
+        ?MailSender $sender = null,
     ): ?Communication {
         $recipients = $this->resolveRecipients($to);
 
@@ -49,7 +52,13 @@ class Communicator
         }
 
         $resolvedContact = $this->resolveContact($contact, $to);
-        $tenantId = $this->resolveTenantId($tenantSettings, $resolvedContact);
+        $tenantId = $sender?->tenant_id !== null
+            ? (int) $sender->tenant_id
+            : $this->resolveTenantId($tenantSettings, $resolvedContact);
+
+        if ($sender) {
+            $metadata['mail_sender_id'] = $sender->getKey();
+        }
 
         $communication = Communication::create([
             'tenant_id' => $tenantId,
@@ -68,7 +77,10 @@ class Communicator
         $this->tagMailable($mailable, $communication->id);
 
         try {
-            $mailer = $this->smtpResolver->resolve($tenantSettings);
+            // An explicit sender wins over the tenant's default.
+            $mailer = $sender
+                ? $this->smtpResolver->resolveForSender($sender)
+                : $this->smtpResolver->resolve($tenantSettings);
             $pendingMail = $mailer->to($recipients);
 
             if ($queue) {
