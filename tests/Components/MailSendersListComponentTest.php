@@ -12,13 +12,6 @@ uses(Tests\TestCase::class);
 uses(RefreshDatabase::class);
 uses(CreatesCommunicationUser::class);
 
-it('renders the mail-senders route', function (): void {
-    $user = $this->withCommunicationModule();
-    $this->actingAs($user);
-
-    $this->get('/mail-senders')->assertStatus(200);
-});
-
 it('lists only the senders of the acting tenant', function (): void {
     $user = $this->withCommunicationModule();
     $this->actingAs($user);

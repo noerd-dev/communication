@@ -26,12 +26,12 @@ uses(RefreshDatabase::class);
  * Stand-in for whatever record a host app links a mail to. The Communicator must accept
  * any Eloquent model, so this fixture is never persisted and needs no table.
  */
-class CommunicatorTestContact extends Model
+class ZzCommunicatorTestContact extends Model
 {
     protected $guarded = [];
 }
 
-class CommunicatorTestMail extends Mailable
+class ZzCommunicatorTestMail extends Mailable
 {
     public function __construct(public string $bodyText = 'Hello world') {}
 
@@ -50,10 +50,10 @@ it('sends a mail and persists a communication row', function (): void {
     Mail::fake();
 
     $tenant = Tenant::factory()->create();
-    $contact = new CommunicatorTestContact(['id' => 42, 'tenant_id' => $tenant->id]);
+    $contact = new ZzCommunicatorTestContact(['id' => 42, 'tenant_id' => $tenant->id]);
 
     $communication = app(Communicator::class)->send(
-        mailable: new CommunicatorTestMail(),
+        mailable: new ZzCommunicatorTestMail(),
         to: 'foo@example.com',
         contact: $contact,
     );
@@ -61,31 +61,31 @@ it('sends a mail and persists a communication row', function (): void {
     expect($communication)->toBeInstanceOf(Communication::class);
     expect($communication->type)->toBe(CommunicationType::Email);
     expect($communication->status)->toBe(CommunicationStatus::Sent);
-    expect($communication->contact_type)->toBe(CommunicatorTestContact::class);
+    expect($communication->contact_type)->toBe(ZzCommunicatorTestContact::class);
     expect($communication->contact_id)->toBe(42);
     expect($communication->tenant_id)->toBe($tenant->id);
     expect($communication->to)->toBe('foo@example.com');
-    expect($communication->mailable_class)->toBe(CommunicatorTestMail::class);
+    expect($communication->mailable_class)->toBe(ZzCommunicatorTestMail::class);
 
-    Mail::assertSent(CommunicatorTestMail::class, fn($mail) => $mail->hasTo('foo@example.com'));
+    Mail::assertSent(ZzCommunicatorTestMail::class, fn($mail) => $mail->hasTo('foo@example.com'));
 });
 
 it('accepts any Eloquent model as recipient and auto-resolves the contact link', function (): void {
     Mail::fake();
 
     $tenant = Tenant::factory()->create();
-    $contact = new CommunicatorTestContact([
+    $contact = new ZzCommunicatorTestContact([
         'id' => 7,
         'tenant_id' => $tenant->id,
         'email' => 'auto@example.com',
     ]);
 
     $communication = app(Communicator::class)->send(
-        mailable: new CommunicatorTestMail(),
+        mailable: new ZzCommunicatorTestMail(),
         to: $contact,
     );
 
-    expect($communication->contact_type)->toBe(CommunicatorTestContact::class);
+    expect($communication->contact_type)->toBe(ZzCommunicatorTestContact::class);
     expect($communication->contact_id)->toBe(7);
     expect($communication->tenant_id)->toBe($tenant->id);
     expect($communication->to)->toBe('auto@example.com');
@@ -95,8 +95,8 @@ it('skips sending when the recipient model carries no email', function (): void 
     Mail::fake();
 
     $communication = app(Communicator::class)->send(
-        mailable: new CommunicatorTestMail(),
-        to: new CommunicatorTestContact(['id' => 9]),
+        mailable: new ZzCommunicatorTestMail(),
+        to: new ZzCommunicatorTestContact(['id' => 9]),
     );
 
     expect($communication)->toBeNull();
@@ -117,7 +117,7 @@ it('persists status=failed and rethrows when the mailer throws', function (): vo
 
     expect(function () use ($tenant): void {
         app(Communicator::class)->send(
-            mailable: new CommunicatorTestMail(),
+            mailable: new ZzCommunicatorTestMail(),
             to: 'broken@example.com',
             tenantSettings: ['tenant_id' => $tenant->id],
         );
@@ -132,37 +132,25 @@ it('accepts an array of recipients', function (): void {
     Mail::fake();
 
     $communication = app(Communicator::class)->send(
-        mailable: new CommunicatorTestMail(),
+        mailable: new ZzCommunicatorTestMail(),
         to: ['a@example.com', 'b@example.com'],
     );
 
     expect($communication->to)->toBe('a@example.com, b@example.com');
 });
 
-it('allows a nullable contact', function (): void {
+it('leaves the contact and model links empty when neither is passed', function (): void {
     Mail::fake();
 
     $communication = app(Communicator::class)->send(
-        mailable: new CommunicatorTestMail(),
+        mailable: new ZzCommunicatorTestMail(),
         to: 'anon@example.com',
     );
 
     expect($communication->contact_type)->toBeNull();
     expect($communication->contact_id)->toBeNull();
-});
-
-it('derives the tenant from the contact when no tenantSettings are given', function (): void {
-    Mail::fake();
-
-    $tenant = Tenant::factory()->create();
-
-    $communication = app(Communicator::class)->send(
-        mailable: new CommunicatorTestMail(),
-        to: 'foo@example.com',
-        contact: new CommunicatorTestContact(['id' => 3, 'tenant_id' => $tenant->id]),
-    );
-
-    expect($communication->tenant_id)->toBe($tenant->id);
+    expect($communication->model_type)->toBeNull();
+    expect($communication->model_id)->toBeNull();
 });
 
 it('keeps the contact and model links independent', function (): void {
@@ -172,13 +160,13 @@ it('keeps the contact and model links independent', function (): void {
     $source = NoerdUser::factory()->create(['selected_tenant_id' => $tenant->id]);
 
     $communication = app(Communicator::class)->send(
-        mailable: new CommunicatorTestMail(),
+        mailable: new ZzCommunicatorTestMail(),
         to: 'foo@example.com',
-        contact: new CommunicatorTestContact(['id' => 5, 'tenant_id' => $tenant->id]),
+        contact: new ZzCommunicatorTestContact(['id' => 5, 'tenant_id' => $tenant->id]),
         model: $source,
     );
 
-    expect($communication->contact_type)->toBe(CommunicatorTestContact::class);
+    expect($communication->contact_type)->toBe(ZzCommunicatorTestContact::class);
     expect($communication->contact_id)->toBe(5);
     expect($communication->model_type)->toBe($source->getMorphClass());
     expect($communication->model_id)->toBe($source->id);
@@ -191,7 +179,7 @@ it('stores a polymorphic model link when a model is passed', function (): void {
     $linked = NoerdUser::factory()->create(['selected_tenant_id' => $tenant->id]);
 
     $communication = app(Communicator::class)->send(
-        mailable: new CommunicatorTestMail(),
+        mailable: new ZzCommunicatorTestMail(),
         to: 'foo@example.com',
         tenantSettings: ['tenant_id' => $tenant->id],
         model: $linked,
@@ -200,18 +188,6 @@ it('stores a polymorphic model link when a model is passed', function (): void {
     expect($communication->model_type)->toBe($linked->getMorphClass());
     expect($communication->model_id)->toBe($linked->id);
     expect($communication->model->id)->toBe($linked->id);
-});
-
-it('leaves the model link empty when no model is passed', function (): void {
-    Mail::fake();
-
-    $communication = app(Communicator::class)->send(
-        mailable: new CommunicatorTestMail(),
-        to: 'foo@example.com',
-    );
-
-    expect($communication->model_type)->toBeNull();
-    expect($communication->model_id)->toBeNull();
 });
 
 it('routes through an explicit sender account and stamps its tenant', function (): void {
@@ -223,7 +199,7 @@ it('routes through an explicit sender account and stamps its tenant', function (
     $resolver->shouldNotReceive('resolve');
 
     $communication = (new Communicator($resolver))->send(
-        mailable: new CommunicatorTestMail(),
+        mailable: new ZzCommunicatorTestMail(),
         to: 'someone@example.com',
         sender: $sender,
     );

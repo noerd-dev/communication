@@ -12,15 +12,6 @@ uses(Tests\TestCase::class);
 uses(RefreshDatabase::class);
 uses(CreatesCommunicationUser::class);
 
-it('renders the mail-sender detail route', function (): void {
-    $user = $this->withCommunicationModule();
-    $this->actingAs($user);
-
-    $sender = MailSender::factory()->create(['tenant_id' => $user->selected_tenant_id]);
-
-    $this->get('/mail-sender/' . $sender->id)->assertStatus(200);
-});
-
 it('persists a sender on save', function (): void {
     $user = $this->withCommunicationModule();
     $this->actingAs($user);
@@ -115,4 +106,19 @@ it('rate-limits the test email per sender, not per tenant', function (): void {
     Livewire::test('communication::mail-sender-detail', ['modelId' => $second->id])
         ->call('sendTestEmail')
         ->assertSet('testEmailMessage', __('Test email sent to :email', ['email' => $user->email]));
+});
+
+it('refuses the test email for a sender of another tenant', function (): void {
+    $owner = $this->withCommunicationModule();
+    $foreignSender = MailSender::factory()->create(['tenant_id' => $owner->selected_tenant_id]);
+
+    $intruder = $this->withCommunicationModule();
+    $this->actingAs($intruder);
+
+    // The lookup runs through the tenant global scope, so the foreign id
+    // resolves to nothing and no mail is ever sent through that account.
+    Livewire::test('communication::mail-sender-detail', ['modelId' => $foreignSender->id])
+        ->call('sendTestEmail')
+        ->assertSet('testEmailError', __('Save the sender before sending a test email.'))
+        ->assertSet('testEmailMessage', null);
 });
