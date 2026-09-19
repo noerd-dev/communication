@@ -23,8 +23,22 @@ new class extends Component {
             @if(! empty($detailData['body']))
                 <div class="mt-4">
                     <h3 class="text-sm font-semibold mb-2">{{ __('Body') }}</h3>
-                    <div class="border rounded p-4 bg-gray-50 max-h-96 overflow-auto prose prose-sm max-w-none">
-                        {!! $detailData['body'] !!}
+                    {{--
+                        The logged body is the HTML that was actually sent, and
+                        parts of it came from whoever filled the form or booking
+                        widget the mail was generated from. Rendering it into
+                        this page would execute the sender's markup in the
+                        reader's authenticated session, so it goes into a fully
+                        sandboxed iframe with an escaped attribute — the same
+                        treatment the core email preview gives template output.
+                    --}}
+                    <div class="border rounded overflow-hidden bg-white">
+                        <iframe
+                            srcdoc="{{ $detailData['body'] }}"
+                            class="w-full h-96 bg-white"
+                            sandbox=""
+                            title="{{ __('Body') }}">
+                        </iframe>
                     </div>
                 </div>
             @endif
