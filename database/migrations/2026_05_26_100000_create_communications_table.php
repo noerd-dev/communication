@@ -16,10 +16,6 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        if (Schema::hasTable('communications')) {
-            return;
-        }
-
         Schema::create('communications', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('tenant_id')->nullable()

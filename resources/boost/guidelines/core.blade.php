@@ -29,9 +29,8 @@ the `noerd/noerd` guideline — this block only adds what is specific to this mo
   `tenant_id`) — read through `CommunicationSetting::forTenant($tenantId)` (unscoped);
   `resolvedFromEmail()` / `resolvedReplyEmail()` answer from the tenant's default `MailSender`,
   falling back to `config('mail.from.address')` / null. The row's own `from_email` is
-  deliberately NOT consulted (SPF/DKIM). The SMTP columns and `reply_email` were moved to
-  `communication_mail_senders` by the `2026_09_01_*` migrations; the settings page is gone
-  (its old URLs redirect to `/mail-senders`)
+  deliberately NOT consulted (SPF/DKIM). There is no settings page: sender addresses and SMTP
+  credentials live on the `MailSender` accounts
 - None of the models carries `custom_attributes`; project-specific fields stay out of the module
 
 ### Sending mail
@@ -76,10 +75,8 @@ the `noerd/noerd` guideline — this block only adds what is specific to this mo
   and the installed project copy (`app-configs/communication/…`) in sync
 - Routes: `routes/communication-routes.php` — middleware `['noerd']` only (no
   `app-access` gate), names `communications`, `communication.detail`, `mail-senders`,
-  `mail-sender.detail`; legacy `/sent-mails`, `/sent-mail/{id}`, `/marketing-settings` and
-  `/communication-settings` are 301 redirects
-- Tenant app name is `COMMUNICATION` (uppercase; renamed from `MARKETING` by the
-  `rename_marketing_tenant_app_to_communication` migration) — gates and test traits compare
+  `mail-sender.detail`
+- Tenant app name is `COMMUNICATION` (uppercase) — gates and test traits compare
   exactly. App icon: `communication::icons.app`, app route `communications`
 - Services are container singletons (`TenantSmtpResolver`, `Communicator`); the `MessageSent`
   listener is registered in the provider's `boot()`
