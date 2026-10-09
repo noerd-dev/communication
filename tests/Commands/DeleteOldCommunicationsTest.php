@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Noerd\Communication\Models\Communication;
+use Noerd\Communication\Models\CommunicationUsage;
 use Noerd\Models\Tenant;
 
 uses(Tests\TestCase::class);
@@ -52,4 +53,18 @@ it('honours a custom retention period', function (): void {
     $remaining = Communication::withoutGlobalScopes()->pluck('id')->all();
 
     expect($remaining)->toContain($recent->id)->not->toContain($old->id);
+});
+
+it('keeps the usage records of deleted communications for invoicing', function (): void {
+    $tenant = Tenant::factory()->create();
+    $old = zzCommunicationAged($tenant->id, 40);
+    $usage = CommunicationUsage::factory()->create([
+        'tenant_id' => $tenant->id,
+        'communication_id' => $old->id,
+    ]);
+
+    Artisan::call('communication:delete-old-communications', ['--days' => 30]);
+
+    expect(Communication::withoutGlobalScopes()->find($old->id))->toBeNull()
+        ->and($usage->refresh()->communication_id)->toBeNull();
 });

@@ -1,7 +1,7 @@
 @verbatim
 ## Communication Module
 
-Central e-mail sending and communications log (Composer package `noerd/communication`, namespace
+Central e-mail and text message (SMS, WhatsApp) sending and communications log (Composer package `noerd/communication`, namespace
 `Noerd\Communication`). It is a Noerd tenant app (`app-configs/communication/navigation.yml`, the
 app is `hidden: true` in the sidebar — its screens are reached through the settings of the host
 app). The framework rules (lists, details, pages, modals, themes, tests, translations) come from
@@ -9,7 +9,7 @@ the `noerd/noerd` guideline — this block only adds what is specific to this mo
 
 ### Domain
 - `Communication` (table `communications`, `BelongsToTenant`, `tenant_id` nullable) — one row per
-  outgoing mail: `type` (`CommunicationType`, only `email`), `status` (`CommunicationStatus`:
+  outgoing mail or text message: `type` (`CommunicationType`: `email`, `sms`, `whatsapp`), `status` (`CommunicationStatus`:
   `queued`, `sent`, `failed`), `from`, `to`, `subject`, `body`, `mailable_class`, `message_id`,
   `error_message`, `metadata` (JSON), `sent_at`. TWO independent polymorphic links without
   foreign keys: `model()` (`model_type`/`model_id` — the SOURCE record the mail was generated
@@ -31,6 +31,11 @@ the `noerd/noerd` guideline — this block only adds what is specific to this mo
   falling back to `config('mail.from.address')` / null. The row's own `from_email` is
   deliberately NOT consulted (SPF/DKIM). There is no settings page: sender addresses and SMTP
   credentials live on the `MailSender` accounts
+- `CommunicationUsage` (table `communication_usages`, `BelongsToTenant`) — one row per text
+  message a provider accepted: `type`, `provider`, `units`, `cost`/`currency` (null until the
+  provider priced it), `occurred_at`, `communication_id` (nullOnDelete). It is the basis for
+  invoicing messages to tenants and is NEVER pruned — the retention command deletes the log rows
+  only
 - None of the models carries `custom_attributes`; project-specific fields stay out of the module
 
 ### Sending mail
@@ -63,6 +68,31 @@ the `noerd/noerd` guideline — this block only adds what is specific to this mo
   (reference: `accounting` `InvoiceMail`) — never from `.env` directly and never from the
   settings row's own columns
 
+### Sending text messages (SMS, WhatsApp)
+- EVERY text message goes through `app(Communicator::class)->sendText(CommunicationType $type,
+  string|Model|null $to, string $body, ?string $template = null, array $variables = [],
+  ?Model $contact = null, ?Model $model = null, ?int $tenantId = null, array $metadata = [],
+  bool $queue = false): ?Communication`. `to:` is a phone number in any notation
+  (`Support\PhoneNumber::normalize()` makes it E.164, default country 49) or a model with a
+  `phone` attribute (then also the contact). It returns `null` and sends nothing when the number
+  is invalid or no driver is available for the channel — a caller never checks a provider
+- `body` is the plain text, always logged and sent where no template applies; `template` is a
+  stable key of the sending module (`{module}.{event}`, e.g. `liefertool.order_placed`) with
+  ordered `variables` (`['1' => …]`) that a driver may map to a provider template (WhatsApp
+  requires an approved one for a business-initiated message)
+- Row first (status `queued`, provider/template/variables in `metadata`), then delivery — at
+  once, or with `queue: true` by `Jobs\SendTextMessage` (`deliverText()`, never sends a row that
+  is already `sent`). Success stamps `message_id`, `from`, `sent_at` and writes a
+  `CommunicationUsage`; a failure marks the row `failed` and RE-THROWS
+- Providers are DRIVERS of `Contracts\TextMessageDriver` (`type()`, `provider()`,
+  `isAvailable($tenantId)`, `send(Support\TextMessage): Support\TextMessageResult`), registered
+  by a provider module on `Support\TextMessageChannelRegistry` (one driver per channel, the last
+  registration wins; `isAvailable($type, $tenantId)` lets a settings screen hide a channel). This
+  module knows NO provider — never name one here; provider modules depend on this module, never
+  the other way round
+- Consent is the caller's business: a module messaging its customers sends only to recipients
+  who opted in to that channel
+
 ### Structure
 - Livewire components (flat, `resources/views/components/`, namespace `communication::`):
   `communications-list` (custom `listData()` narrowing by `modelType` + `modelId` — embed it
@@ -78,9 +108,10 @@ the `noerd/noerd` guideline — this block only adds what is specific to this mo
   `mail-sender.detail`
 - Tenant app name is `COMMUNICATION` (uppercase) — gates and test traits compare
   exactly. App icon: `communication::icons.app`, app route `communications`
-- Services are container singletons (`TenantSmtpResolver`, `Communicator`); the `MessageSent`
+- Services are container singletons (`TenantSmtpResolver`, `TextMessageChannelRegistry`,
+  `Communicator`); the `MessageSent`
   listener is registered in the provider's `boot()`
-- Translations: `resources/lang/de.json` (English keys); factories for all three models in
+- Translations: `resources/lang/de.json` (English keys); factories for all four models in
   `database/factories/`
 - Depends only on `noerd/noerd` (guarded by `tests/ModuleBoundaryTest.php`) — never on a domain
   module; consumers (`accounting`, `booking`, `liefertool`) depend on this module, not the other

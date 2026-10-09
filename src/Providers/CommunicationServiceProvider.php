@@ -12,12 +12,14 @@ use Noerd\Communication\Commands\Crons\DeleteOldCommunications;
 use Noerd\Communication\Listeners\LogMessageSentFallback;
 use Noerd\Communication\Services\Communicator;
 use Noerd\Communication\Services\TenantSmtpResolver;
+use Noerd\Communication\Support\TextMessageChannelRegistry;
 
 class CommunicationServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
         $this->app->singleton(TenantSmtpResolver::class);
+        $this->app->singleton(TextMessageChannelRegistry::class);
         $this->app->singleton(Communicator::class);
     }
 

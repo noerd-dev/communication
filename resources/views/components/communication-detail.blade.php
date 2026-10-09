@@ -20,7 +20,12 @@ new class extends Component {
 
     <x-noerd::tab-content :layout="$pageLayout" :modelId="$modelId">
         <x-slot:tab1>
-            @if(! empty($detailData['body']))
+            @if(! empty($detailData['body']) && ($detailData['type'] ?? 'email') !== 'email')
+                <div class="mt-4">
+                    <h3 class="text-sm font-semibold mb-2">{{ __('Message') }}</h3>
+                    <div class="border rounded bg-white p-3 text-sm whitespace-pre-line">{{ $detailData['body'] }}</div>
+                </div>
+            @elseif(! empty($detailData['body']))
                 <div class="mt-4">
                     <h3 class="text-sm font-semibold mb-2">{{ __('Body') }}</h3>
                     {{--

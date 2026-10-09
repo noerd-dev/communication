@@ -1,6 +1,6 @@
 # Communication Module
 
-Central email sending and communications log for the noerd platform.
+Central email and text message (SMS, WhatsApp) sending and communications log for the noerd platform.
 
 ## Purpose
 
@@ -23,6 +23,25 @@ app(Communicator::class)->send(
 
 `to:` accepts an email, a list of emails, or any Eloquent model carrying an `email`
 attribute.
+
+## Text messages (SMS, WhatsApp)
+
+```php
+app(Communicator::class)->sendText(
+    type: CommunicationType::WhatsApp,
+    to: $settings->whatsapp_number,      // any notation, or a model with a `phone` attribute
+    body: __('New order from :name', ['name' => $customer->name]),
+    template: 'liefertool.order_placed', // a driver may map it to an approved provider template
+    variables: ['1' => $customer->name],
+    model: $order,
+    queue: true,
+);
+```
+
+The module ships no provider: a separate provider module registers a
+`TextMessageDriver` per channel on the `TextMessageChannelRegistry`. Without one, `sendText()`
+returns `null`. Every accepted message is recorded in `communication_usages` for invoicing; the
+retention command never deletes these rows.
 
 ## Two independent record links
 

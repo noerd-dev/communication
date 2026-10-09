@@ -39,5 +39,7 @@
     "Save the sender before sending a test email.": "Bitte den Absender speichern, bevor eine Test-E-Mail gesendet wird.",
     "No email address available for the current user.": "Für den aktuellen Benutzer ist keine E-Mail-Adresse hinterlegt.",
     "Outgoing sender accounts. The default account provides the from and reply address for all mail of this tenant; without SMTP credentials it relays through the platform mail server.": "Absender-Konten für den Mailversand. Das Standard-Konto liefert Absender- und Antwortadresse für alle E-Mails dieses Mandanten; ohne SMTP-Zugangsdaten läuft der Versand über den Plattform-Mailserver.",
-    "Address used for notifications about orders and campaigns. The sender address for outgoing mail is configured per sender.": "Adresse für Benachrichtigungen zu Bestellungen und Kampagnen. Die Absenderadresse für ausgehende E-Mails wird je Absender konfiguriert."
+    "Address used for notifications about orders and campaigns. The sender address for outgoing mail is configured per sender.": "Adresse für Benachrichtigungen zu Bestellungen und Kampagnen. Die Absenderadresse für ausgehende E-Mails wird je Absender konfiguriert.",
+    "Message": "Nachricht",
+    "Message ID": "Nachrichten-ID"
 }

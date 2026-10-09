@@ -16,6 +16,11 @@ from/reply addresses and optional encrypted SMTP credentials; the `MessageSent` 
 the log row (and records mails sent past the Communicator as untracked rows). The module knows no
 domain model — both record links of a communication are polymorphic and free of foreign keys.
 
+Text messages (SMS, WhatsApp) go through `Communicator::sendText()` in the same log; the
+delivery is done by a `TextMessageDriver` that a provider module registers on the
+`TextMessageChannelRegistry` — this module never knows a provider. Every accepted message is
+recorded in `communication_usages`, which retention never deletes (invoicing).
+
 ## Layout
 
 - `app-configs/communication/` — YAML templates (lists/, details/, navigation.yml); the installed
@@ -25,12 +30,15 @@ domain model — both record links of a communication are polymorphic and free o
 - `resources/views/components/` — Livewire single-file components (`communications-list`,
   `communication-detail`, `mail-senders-list`, `mail-sender-detail`), flat, Livewire namespace
   `communication::`; `icons/app.blade.php` is the tenant-app icon
-- `src/Models/` (`Communication`, `MailSender`, `CommunicationSetting`), `src/Enums/`,
+- `src/Models/` (`Communication`, `CommunicationUsage`, `MailSender`, `CommunicationSetting`),
+  `src/Enums/`, `src/Contracts/TextMessageDriver.php`, `src/Support/` (`TextMessage`,
+  `TextMessageResult`, `TextMessageChannelRegistry`, `PhoneNumber`), `src/Jobs/SendTextMessage.php`,
   `src/Services/` (`Communicator`, `TenantSmtpResolver`), `src/Listeners/LogMessageSentFallback.php`,
   `src/Commands/` (install, update, `Crons/DeleteOldCommunications`),
   `src/Providers/CommunicationServiceProvider.php`
 - `database/migrations|factories/`, `tests/` (Pest), `resources/lang/de.json`
-- Tables: `communications`, `communication_settings`, `communication_mail_senders`; the tenant
+- Tables: `communications`, `communication_usages`, `communication_settings`,
+  `communication_mail_senders`; the tenant
   app name is `COMMUNICATION` (uppercase)
 
 ## Commands
