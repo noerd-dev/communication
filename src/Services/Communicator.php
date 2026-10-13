@@ -10,11 +10,11 @@ use Noerd\Communication\Jobs\SendTextMessage;
 use Noerd\Communication\Models\Communication;
 use Noerd\Communication\Models\CommunicationUsage;
 use Noerd\Communication\Models\MailSender;
+use Noerd\Communication\Support\CommunicationHeader;
 use Noerd\Communication\Support\PhoneNumber;
 use Noerd\Communication\Support\TextMessage;
 use Noerd\Communication\Support\TextMessageChannelRegistry;
 use RuntimeException;
-use Symfony\Component\Mime\Email;
 use Throwable;
 
 class Communicator
@@ -291,8 +291,6 @@ class Communicator
 
     private function tagMailable(Mailable $mailable, int $communicationId): void
     {
-        $mailable->withSymfonyMessage(function (Email $message) use ($communicationId): void {
-            $message->getHeaders()->addTextHeader(self::COMMUNICATION_HEADER, (string) $communicationId);
-        });
+        $mailable->withSymfonyMessage(new CommunicationHeader($communicationId));
     }
 }

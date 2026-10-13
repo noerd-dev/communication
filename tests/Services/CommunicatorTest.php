@@ -207,3 +207,23 @@ it('routes through an explicit sender account and stamps its tenant', function (
     expect($communication->tenant_id)->toBe($tenant->id)
         ->and($communication->metadata['mail_sender_id'])->toBe($sender->id);
 });
+
+it('queues a mail through a real queue and still tags it with its communication row', function (): void {
+    config(['mail.default' => 'array', 'queue.default' => 'sync']);
+    $tenant = Tenant::factory()->create();
+
+    // The sync queue serialises the job like any other connection does.
+    $communication = app(Communicator::class)->send(
+        mailable: new ZzCommunicatorTestMail('Queued hello'),
+        to: 'queued@example.com',
+        tenantSettings: ['tenant_id' => $tenant->id],
+        queue: true,
+    );
+
+    $sent = app('mailer')->getSymfonyTransport()->messages()->last();
+
+    expect($sent)->not->toBeNull()
+        ->and($sent->getOriginalMessage()->getHeaders()->get(Communicator::COMMUNICATION_HEADER)?->getBodyAsString())
+        ->toBe((string) $communication->id)
+        ->and($communication->fresh()->status)->toBe(CommunicationStatus::Sent);
+});

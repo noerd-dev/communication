@@ -46,7 +46,9 @@ the `noerd/noerd` guideline — this block only adds what is specific to this mo
   attribute (a model without e-mail → returns `null`, nothing sent). `contact:` falls back to
   `to:` when that is a model. Pass the source record as `model:`
 - The row is written FIRST (status `sent`, or `queued` with `queue: true`), the Mailable is
-  tagged with the `X-Communication-Id` header (`Communicator::COMMUNICATION_HEADER`), then sent
+  tagged with the `X-Communication-Id` header (`Communicator::COMMUNICATION_HEADER`) through the invokable
+  `Support\CommunicationHeader` — never a closure: a queued Mailable is serialised together with its
+  message callbacks, then sent
   through the resolved mailer. A throwing mailer marks the row `failed` + `error_message` and
   RE-THROWS, so job retry logic stays intact — never swallow the exception in the caller
 - Tenant resolution: explicit `sender->tenant_id` → `tenantSettings['tenant_id']` /
