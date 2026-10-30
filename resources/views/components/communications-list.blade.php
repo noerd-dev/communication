@@ -23,13 +23,6 @@ new class extends Component {
 
         return $this->buildList($rows);
     }
-
-    public function rendering()
-    {
-        if ((int) request()->communicationId) {
-            $this->listAction(request()->communicationId);
-        }
-    }
 };
 ?>
 
