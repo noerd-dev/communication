@@ -2,6 +2,7 @@
 
 namespace Noerd\Communication\Services;
 
+use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Mail\Mailable;
 use Noerd\Communication\Enums\CommunicationStatus;
@@ -14,6 +15,7 @@ use Noerd\Communication\Support\CommunicationHeader;
 use Noerd\Communication\Support\PhoneNumber;
 use Noerd\Communication\Support\TextMessage;
 use Noerd\Communication\Support\TextMessageChannelRegistry;
+use Noerd\Support\TenantContext;
 use RuntimeException;
 use Throwable;
 
@@ -69,7 +71,7 @@ class Communicator
             $metadata['mail_sender_id'] = $sender->getKey();
         }
 
-        $communication = Communication::create([
+        $communication = $this->forTenant($tenantId, fn(): Communication => Communication::create([
             'tenant_id' => $tenantId,
             'contact_type' => $resolvedContact?->getMorphClass(),
             'contact_id' => $resolvedContact?->getKey(),
@@ -81,7 +83,7 @@ class Communicator
             'mailable_class' => $mailable::class,
             'metadata' => $metadata ?: null,
             'sent_at' => $queue ? null : now(),
-        ]);
+        ]));
 
         $this->tagMailable($mailable, $communication->id);
 
@@ -158,7 +160,7 @@ class Communicator
             return null;
         }
 
-        $communication = Communication::create([
+        $communication = $this->forTenant($tenantId, fn(): Communication => Communication::create([
             'tenant_id' => $tenantId,
             'contact_type' => $resolvedContact?->getMorphClass(),
             'contact_id' => $resolvedContact?->getKey(),
@@ -173,7 +175,7 @@ class Communicator
                 'template' => $template,
                 'variables' => $variables ?: null,
             ])),
-        ]);
+        ]));
 
         if ($queue) {
             SendTextMessage::dispatch($communication->id);
@@ -227,8 +229,10 @@ class Communicator
             'sent_at' => now(),
         ])->save();
 
-        CommunicationUsage::create([
-            'tenant_id' => $communication->tenant_id,
+        $usageTenantId = $communication->tenant_id !== null ? (int) $communication->tenant_id : null;
+
+        $this->forTenant($usageTenantId, fn(): CommunicationUsage => CommunicationUsage::create([
+            'tenant_id' => $usageTenantId,
             'communication_id' => $communication->id,
             'type' => $communication->type,
             'provider' => $driver->provider(),
@@ -236,7 +240,7 @@ class Communicator
             'cost' => $result->cost,
             'currency' => $result->currency,
             'occurred_at' => now(),
-        ]);
+        ]));
     }
 
     /**
@@ -282,11 +286,32 @@ class Communicator
             return (int) $contact->getAttribute('tenant_id');
         }
 
+        // A job, command or public frontend working in a tenant (the job's
+        // dispatcher, TenantContext::run(), a shop middleware).
+        if (TenantContext::current() !== null) {
+            return TenantContext::current();
+        }
+
         if (auth()->check() && (auth()->user()->selected_tenant_id ?? null)) {
             return (int) auth()->user()->selected_tenant_id;
         }
 
         return null;
+    }
+
+    /**
+     * Write a log row of the given tenant. A message no tenant could be resolved
+     * for (a platform mail to a plain address) is tenant-less data: its row is
+     * written in system mode, so the missing tenant context is deliberate.
+     *
+     * @template TReturn
+     *
+     * @param  Closure(): TReturn  $callback
+     * @return TReturn
+     */
+    private function forTenant(?int $tenantId, Closure $callback): mixed
+    {
+        return $tenantId === null ? TenantContext::system($callback) : $callback();
     }
 
     private function tagMailable(Mailable $mailable, int $communicationId): void

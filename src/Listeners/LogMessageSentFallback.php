@@ -7,6 +7,7 @@ use Noerd\Communication\Enums\CommunicationStatus;
 use Noerd\Communication\Enums\CommunicationType;
 use Noerd\Communication\Models\Communication;
 use Noerd\Communication\Services\Communicator;
+use Noerd\Support\TenantContext;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 
@@ -50,9 +51,13 @@ class LogMessageSentFallback
         ])->save();
     }
 
+    /**
+     * A mail sent past the Communicator (the core's password reset, a framework
+     * notification) belongs to no tenant: the row is written in system mode.
+     */
     private function logUntracked(Email $message): void
     {
-        Communication::create([
+        TenantContext::system(fn(): Communication => Communication::create([
             'tenant_id' => null,
             'type' => CommunicationType::Email,
             'status' => CommunicationStatus::Sent,
@@ -64,7 +69,7 @@ class LogMessageSentFallback
             'mailable_class' => null,
             'metadata' => null,
             'sent_at' => now(),
-        ]);
+        ]));
     }
 
     private function extractMessageId(Email $message): ?string

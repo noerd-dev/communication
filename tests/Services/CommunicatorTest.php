@@ -17,6 +17,7 @@ use Noerd\Communication\Services\Communicator;
 use Noerd\Communication\Services\TenantSmtpResolver;
 use Noerd\Models\NoerdUser;
 use Noerd\Models\Tenant;
+use Noerd\Support\TenantContext;
 use Tests\TestCase;
 
 uses(TestCase::class);
@@ -151,6 +152,19 @@ it('leaves the contact and model links empty when neither is passed', function (
     expect($communication->contact_id)->toBeNull();
     expect($communication->model_type)->toBeNull();
     expect($communication->model_id)->toBeNull();
+});
+
+it('logs a mail to a plain address on the tenant a job or command works in', function (): void {
+    Mail::fake();
+
+    $tenant = Tenant::factory()->create();
+
+    $communication = TenantContext::run($tenant->id, fn(): ?Communication => app(Communicator::class)->send(
+        mailable: new ZzCommunicatorTestMail(),
+        to: 'billing@example.com',
+    ));
+
+    expect($communication->tenant_id)->toBe($tenant->id);
 });
 
 it('keeps the contact and model links independent', function (): void {

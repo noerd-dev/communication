@@ -52,11 +52,13 @@ the `noerd/noerd` guideline — this block only adds what is specific to this mo
   through the resolved mailer. A throwing mailer marks the row `failed` + `error_message` and
   RE-THROWS, so job retry logic stays intact — never swallow the exception in the caller
 - Tenant resolution: explicit `sender->tenant_id` → `tenantSettings['tenant_id']` /
-  `->tenant_id` → `contact->tenant_id` → the authenticated user's `selected_tenant_id` → null
+  `->tenant_id` → `contact->tenant_id` → `TenantContext::current()` (the job, command or
+  frontend's tenant) → the authenticated user's `selected_tenant_id` → null. A row whose tenant
+  stays null (a platform mail to a plain address) is written in `TenantContext::system()`
 - `LogMessageSentFallback` listens to `Illuminate\Mail\Events\MessageSent`: a message carrying
   the header completes the existing row (`from`, `subject`, `body`, `message_id`, status
   `sent`); a message WITHOUT it (sent past the Communicator) is logged as an untracked row with
-  `tenant_id = null`. Subject/from/body are therefore filled by the listener — a Mailable needs
+  `tenant_id = null`, written in `TenantContext::system()`. Subject/from/body are therefore filled by the listener — a Mailable needs
   no `envelope()`
 - Mailer choice is `TenantSmtpResolver` (singleton): `resolveForSender(?MailSender)` →
   `resolveForTenant(?int)` → `resolve(mixed)` (accepts a `MailSender`, anything with
