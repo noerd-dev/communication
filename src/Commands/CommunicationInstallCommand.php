@@ -3,8 +3,8 @@
 namespace Noerd\Communication\Commands;
 
 use Illuminate\Console\Command;
-use Noerd\Traits\HasModuleInstallation;
-use Noerd\Traits\RequiresNoerdInstallation;
+use Noerd\Commands\Concerns\HasModuleInstallation;
+use Noerd\Commands\Concerns\RequiresNoerdInstallation;
 
 class CommunicationInstallCommand extends Command
 {
