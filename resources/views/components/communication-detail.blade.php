@@ -10,6 +10,11 @@ new class extends Component {
     public $detailModel = Communication::class;
 
     public ?string $detailPrimary = 'communicationId';
+
+    /**
+     * The communications log is never edited from the screen.
+     */
+    protected bool $deletable = false;
 };
 ?>
 
