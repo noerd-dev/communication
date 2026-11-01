@@ -10,19 +10,14 @@ new class extends Component {
     public $listModel = Communication::class;
     public ?string $detailRoute = 'communication.detail';
 
+    public $detailComponent = 'communication::communication-detail';
+
+    /** Narrows the log to the mails of one source record (embedded in its detail). */
     public ?string $modelType = null;
+
     public ?int $modelId = null;
 
-    public function listData(): array
-    {
-        $rows = $this->listQuery($this->listModel)
-            ->when($this->modelType && $this->modelId, fn ($query) => $query
-                ->where('model_type', $this->modelType)
-                ->where('model_id', $this->modelId))
-            ->paginate($this->perPage);
-
-        return $this->buildList($rows);
-    }
+    protected array $listScopes = ['model_type' => 'modelType', 'model_id' => 'modelId'];
 };
 ?>
 

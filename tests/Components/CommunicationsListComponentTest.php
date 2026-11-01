@@ -5,16 +5,14 @@ declare(strict_types=1);
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Noerd\Communication\Models\Communication;
-use Noerd\Communication\Tests\Traits\CreatesCommunicationUser;
 use Noerd\Models\NoerdUser;
 use Tests\TestCase;
 
 uses(TestCase::class);
 uses(RefreshDatabase::class);
-uses(CreatesCommunicationUser::class);
 
 beforeEach(function (): void {
-    $user = $this->withCommunicationModule();
+    $user = createNoerdUserForApp('COMMUNICATION');
     $this->actingAs($user);
 
     $this->linked = NoerdUser::factory()->create(['selected_tenant_id' => $user->selected_tenant_id]);

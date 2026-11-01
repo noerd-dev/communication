@@ -5,15 +5,13 @@ declare(strict_types=1);
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Noerd\Communication\Models\MailSender;
-use Noerd\Communication\Tests\Traits\CreatesCommunicationUser;
 use Noerd\Models\Tenant;
 
 uses(Tests\TestCase::class);
 uses(RefreshDatabase::class);
-uses(CreatesCommunicationUser::class);
 
 it('lists only the senders of the acting tenant', function (): void {
-    $user = $this->withCommunicationModule();
+    $user = createNoerdUserForApp('COMMUNICATION');
     $this->actingAs($user);
 
     MailSender::factory()->create([

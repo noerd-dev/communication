@@ -57,7 +57,7 @@ recorded in `communication_usages`, which retention never deletes (invoicing).
 - Format from the host project root with an explicit path:
   `vendor/bin/pint app-modules/communication` (a plain `--dirty` run silently skips submodule files)
 - Keep the module independent of other optional modules: it depends on `noerd/noerd` only
-  (`tests/ModuleBoundaryTest.php`); consumers such as accounting, booking or liefertool depend on
+  (`tests/Feature/ModuleBoundaryTest.php`); consumers such as accounting, booking or liefertool depend on
   this module, never the other way round. Do not add domain foreign keys to the polymorphic links
 - The models carry no `custom_attributes`; project-specific fields must not go into module code
   or module YAML

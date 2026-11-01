@@ -4,21 +4,14 @@ namespace Noerd\Communication\Commands;
 
 use Illuminate\Console\Command;
 use Noerd\Commands\Concerns\HasModuleInstallation;
-use Noerd\Commands\Concerns\RequiresNoerdInstallation;
 
 class CommunicationInstallCommand extends Command
 {
     use HasModuleInstallation;
-    use RequiresNoerdInstallation;
 
-    protected $signature = 'noerd:install-communication {--force : Overwrite existing files without asking}';
+    protected $signature = 'noerd:install-communication';
 
     protected $description = 'Install communication module content and navigation';
-
-    public function handle(): int
-    {
-        return $this->runModuleInstallation();
-    }
 
     protected function getModuleName(): string
     {
@@ -28,11 +21,6 @@ class CommunicationInstallCommand extends Command
     protected function getModuleKey(): string
     {
         return 'communication';
-    }
-
-    protected function getDefaultAppTitle(): string
-    {
-        return 'Communication';
     }
 
     protected function getAppIcon(): string

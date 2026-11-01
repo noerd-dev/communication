@@ -6,14 +6,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
 use Noerd\Communication\Models\MailSender;
-use Noerd\Communication\Tests\Traits\CreatesCommunicationUser;
 
 uses(Tests\TestCase::class);
 uses(RefreshDatabase::class);
-uses(CreatesCommunicationUser::class);
 
 it('persists a sender on save', function (): void {
-    $user = $this->withCommunicationModule();
+    $user = createNoerdUserForApp('COMMUNICATION');
     $this->actingAs($user);
 
     $component = Livewire::test('communication::mail-sender-detail')
@@ -38,7 +36,7 @@ it('persists a sender on save', function (): void {
 });
 
 it('reports the fields the layout marks as required', function (): void {
-    $user = $this->withCommunicationModule();
+    $user = createNoerdUserForApp('COMMUNICATION');
     $this->actingAs($user);
 
     $component = Livewire::test('communication::mail-sender-detail')
@@ -49,7 +47,7 @@ it('reports the fields the layout marks as required', function (): void {
 });
 
 it('refuses a test email before the sender is saved', function (): void {
-    $user = $this->withCommunicationModule();
+    $user = createNoerdUserForApp('COMMUNICATION');
     $this->actingAs($user);
 
     Livewire::test('communication::mail-sender-detail')
@@ -60,7 +58,7 @@ it('refuses a test email before the sender is saved', function (): void {
 
 it('sends a test email through the sender to the logged-in user', function (): void {
     config(['mail.default' => 'array']);
-    $user = $this->withCommunicationModule();
+    $user = createNoerdUserForApp('COMMUNICATION');
     $this->actingAs($user);
     app('mail.manager')->forgetMailers();
     Cache::flush();
@@ -87,7 +85,7 @@ it('sends a test email through the sender to the logged-in user', function (): v
  */
 it('rate-limits the test email per sender, not per tenant', function (): void {
     config(['mail.default' => 'array']);
-    $user = $this->withCommunicationModule();
+    $user = createNoerdUserForApp('COMMUNICATION');
     $this->actingAs($user);
     app('mail.manager')->forgetMailers();
     Cache::flush();
@@ -109,10 +107,10 @@ it('rate-limits the test email per sender, not per tenant', function (): void {
 });
 
 it('refuses the test email for a sender of another tenant', function (): void {
-    $owner = $this->withCommunicationModule();
+    $owner = createNoerdUserForApp('COMMUNICATION');
     $foreignSender = MailSender::factory()->create(['tenant_id' => $owner->selected_tenant_id]);
 
-    $intruder = $this->withCommunicationModule();
+    $intruder = createNoerdUserForApp('COMMUNICATION');
     $this->actingAs($intruder);
 
     // The lookup runs through the tenant global scope, so the foreign id

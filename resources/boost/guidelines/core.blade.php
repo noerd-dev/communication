@@ -99,12 +99,13 @@ the `noerd/noerd` guideline — this block only adds what is specific to this mo
 
 ### Structure
 - Livewire components (flat, `resources/views/components/`, namespace `communication::`):
-  `communications-list` (custom `listData()` narrowing by `modelType` + `modelId` — embed it
-  in a detail/page to show the mails of one record; `rendering()` opens
-  `?communicationId=` as a modal), `communication-detail` (slim, read-only log entry),
+  `communications-list` (slim, `$listScopes` narrow it by `modelType` + `modelId` — embed it
+  in a detail/page to show the mails of one record; `?communicationId=` opens a record through
+  the core deep link), `communication-detail` (slim, read-only log entry),
   `mail-senders-list` (slim), `mail-sender-detail` (YAML action `sendTestEmail`: sends a raw
   test mail THROUGH THIS ACCOUNT to the logged-in user, cached cooldown of one minute per
-  sender and user). The provider registers the namespace AND `Livewire::addLocation`
+  sender and user). The provider extends `NoerdModuleServiceProvider` (`$moduleKey =
+  'communication'`), which registers the `communication::` namespace — never a bare name
 - YAML: `app-configs/communication/{lists,details}/` + `navigation.yml` — keep the module copy
   and the installed project copy (`app-configs/communication/…`) in sync
 - Routes: `routes/communication-routes.php` — middleware `['noerd']` only (no
@@ -114,16 +115,16 @@ the `noerd/noerd` guideline — this block only adds what is specific to this mo
   exactly. App icon: `communication::icons.app`, app route `communications`
 - Services are container singletons (`TenantSmtpResolver`, `TextMessageChannelRegistry`,
   `Communicator`); the `MessageSent`
-  listener is registered in the provider's `boot()`
+  listener is registered in the provider's `bootModule()`
 - Translations: `resources/lang/de.json` (English keys); factories for all four models in
   `database/factories/`
-- Depends only on `noerd/noerd` (guarded by `tests/ModuleBoundaryTest.php`) — never on a domain
+- Depends only on `noerd/noerd` (guarded by `tests/Feature/ModuleBoundaryTest.php`, `assertModuleBoundary()`) — never on a domain
   module; consumers (`accounting`, `booking`, `liefertool`) depend on this module, not the other
   way round
 
 ### Commands
 - `php artisan noerd:install-communication` — installs YAML configs, registers the tenant app,
-  runs migrations (`HasModuleInstallation` + `RequiresNoerdInstallation`)
+  runs migrations (`HasModuleInstallation`)
 - `php artisan noerd:update-communication` — idempotent YAML update (picked up by
   `noerd:update-all`)
 - `php artisan communication:delete-old-communications {--days=30}` — deletes log rows older
@@ -133,8 +134,9 @@ the `noerd/noerd` guideline — this block only adds what is specific to this mo
 ### Tests
 - Pest tests in `tests/` (host-bound, `Tests\TestCase` of the host + `RefreshDatabase`); run
   from the host: `php artisan test --compact app-modules/communication/tests`
-- `tests/Traits/CreatesCommunicationUser.php` provides `withCommunicationModule()` (tenant +
-  user + `COMMUNICATION` tenant app, selected app set)
+- The user fixture is the core `createNoerdUserForApp('COMMUNICATION')` /
+  `actingAsNoerdUserForApp('COMMUNICATION')` (tenant + user + `COMMUNICATION` tenant app,
+  selected app set) — there is no module test trait
 - `Mail::fake()` / a bound fake `Mailer` for the Communicator; assert rows through
   `Communication::withoutGlobalScopes()` — the listener and the resolver run without tenant
   context
