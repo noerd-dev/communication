@@ -43,6 +43,32 @@ The module ships no provider: a separate provider module registers a
 returns `null`. Every accepted message is recorded in `communication_usages` for invoicing; the
 retention command never deletes these rows.
 
+### Delivery status
+
+A provider module reports what happened to a sent message through
+`Communicator::updateTextStatus($messageId, CommunicationStatus::Delivered|Read|Failed, $reason)`.
+A report never moves a message back, so out-of-order callbacks are harmless.
+
+### Replies
+
+A provider module's webhook passes every incoming message to `receiveText()`:
+
+```php
+app(Communicator::class)->receiveText(
+    type: CommunicationType::Sms,
+    from: $request->input('From'),
+    to: $request->input('To'),
+    body: (string) $request->input('Body'),
+    messageId: $request->input('MessageSid'),
+    provider: 'twilio',
+);
+```
+
+The reply is logged as an `inbound` row in the tenant of the latest outbound message to the
+sender's number, with that message's `contact` and `model` and `in_reply_to_id` pointing at it;
+then `Events\TextMessageReceived` fires inside that tenant's context. A sender nobody wrote to is
+logged without a tenant. A message id that was logged already is not logged again.
+
 ## Two independent record links
 
 Every communication can reference two records polymorphically, and they are independent of

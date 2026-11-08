@@ -19,7 +19,10 @@ domain model — both record links of a communication are polymorphic and free o
 Text messages (SMS, WhatsApp) go through `Communicator::sendText()` in the same log; the
 delivery is done by a `TextMessageDriver` that a provider module registers on the
 `TextMessageChannelRegistry` — this module never knows a provider. Every accepted message is
-recorded in `communication_usages`, which retention never deletes (invoicing).
+recorded in `communication_usages`, which retention never deletes (invoicing). Incoming text messages
+(replies) arrive through `Communicator::receiveText()`, called by a provider module's webhook: an
+`inbound` row in the tenant of the latest outbound message to that number, followed by the
+`TextMessageReceived` event.
 
 ## Layout
 
@@ -31,7 +34,7 @@ recorded in `communication_usages`, which retention never deletes (invoicing).
   `communication-detail`, `mail-senders-list`, `mail-sender-detail`), flat, Livewire namespace
   `communication::`; `icons/app.blade.php` is the tenant-app icon
 - `src/Models/` (`Communication`, `CommunicationUsage`, `MailSender`, `CommunicationSetting`),
-  `src/Enums/`, `src/Contracts/TextMessageDriver.php`, `src/Support/` (`TextMessage`,
+  `src/Enums/`, `src/Events/TextMessageReceived.php`, `src/Contracts/TextMessageDriver.php`, `src/Support/` (`TextMessage`,
   `TextMessageResult`, `TextMessageChannelRegistry`, `PhoneNumber`), `src/Jobs/SendTextMessage.php`,
   `src/Services/` (`Communicator`, `TenantSmtpResolver`), `src/Listeners/LogMessageSentFallback.php`,
   `src/Commands/` (install, update, `Crons/DeleteOldCommunications`),

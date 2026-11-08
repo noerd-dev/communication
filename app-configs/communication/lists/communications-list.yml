@@ -8,6 +8,14 @@ columns:
     type: datetime
   - field: type
     label: Type
+  - field: direction
+    label: Direction
+    type: badge
+    options:
+      - value: outbound
+        label: Outbound
+      - value: inbound
+        label: Inbound
   - field: status
     label: Status
   - field: from

@@ -5,8 +5,10 @@ namespace Noerd\Communication\Services;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Mail\Mailable;
+use Noerd\Communication\Enums\CommunicationDirection;
 use Noerd\Communication\Enums\CommunicationStatus;
 use Noerd\Communication\Enums\CommunicationType;
+use Noerd\Communication\Events\TextMessageReceived;
 use Noerd\Communication\Jobs\SendTextMessage;
 use Noerd\Communication\Models\Communication;
 use Noerd\Communication\Models\CommunicationUsage;
@@ -78,6 +80,7 @@ class Communicator
             'model_type' => $model?->getMorphClass(),
             'model_id' => $model?->getKey(),
             'type' => CommunicationType::Email,
+            'direction' => CommunicationDirection::Outbound,
             'status' => $queue ? CommunicationStatus::Queued : CommunicationStatus::Sent,
             'to' => implode(', ', $recipients),
             'mailable_class' => $mailable::class,
@@ -167,6 +170,7 @@ class Communicator
             'model_type' => $model?->getMorphClass(),
             'model_id' => $model?->getKey(),
             'type' => $type,
+            'direction' => CommunicationDirection::Outbound,
             'status' => CommunicationStatus::Queued,
             'to' => $phone,
             'body' => $body,
@@ -189,12 +193,159 @@ class Communicator
     }
 
     /**
+     * Log a text message somebody sent to the platform (a reply) and fire
+     * TextMessageReceived. A provider module calls this from its webhook; this
+     * module never knows the provider.
+     *
+     * The message is matched to the latest outbound text message to the sender's
+     * number — of the same channel first, then of any text channel, across all
+     * tenants: that message's tenant, contact and model become the reply's, and
+     * `in_reply_to_id` points at it. A sender nobody wrote to is logged without a
+     * tenant (system mode) and reaches no tenant's screens.
+     *
+     * A provider retries a webhook it got no answer for: a message id that was
+     * logged already returns the existing row and fires nothing.
+     *
+     * Returns null — and logs nothing — for a sender without a valid number.
+     *
+     * @param  array<string,mixed>  $metadata  Extra data persisted as JSON (media URLs, ...)
+     */
+    public function receiveText(
+        CommunicationType $type,
+        string $from,
+        ?string $to,
+        string $body,
+        ?string $messageId = null,
+        ?string $provider = null,
+        array $metadata = [],
+    ): ?Communication {
+        if (! $type->isTextMessage()) {
+            throw new RuntimeException("{$type->value} is not a text message channel.");
+        }
+
+        $phone = PhoneNumber::normalize($from);
+
+        if ($phone === null) {
+            return null;
+        }
+
+        if ($messageId !== null && $messageId !== '') {
+            $existing = Communication::acrossTenants()
+                ->where('direction', CommunicationDirection::Inbound)
+                ->where('message_id', $messageId)
+                ->first();
+
+            if ($existing !== null) {
+                return $existing;
+            }
+        }
+
+        $original = $this->latestOutboundTextTo($phone, $type);
+        $tenantId = $original?->tenant_id !== null ? (int) $original->tenant_id : null;
+
+        return $this->inTenant($tenantId, function () use ($tenantId, $original, $type, $phone, $to, $body, $messageId, $provider, $metadata): Communication {
+            $communication = Communication::create([
+                'tenant_id' => $tenantId,
+                'contact_type' => $original?->contact_type,
+                'contact_id' => $original?->contact_id,
+                'model_type' => $original?->model_type,
+                'model_id' => $original?->model_id,
+                'type' => $type,
+                'direction' => CommunicationDirection::Inbound,
+                'status' => CommunicationStatus::Received,
+                'from' => $phone,
+                'to' => PhoneNumber::normalize($to) ?? (string) $to,
+                'body' => $body,
+                'message_id' => $messageId ?: null,
+                'in_reply_to_id' => $original?->id,
+                'metadata' => array_merge($metadata, array_filter(['provider' => $provider])) ?: null,
+                'sent_at' => now(),
+            ]);
+
+            // A message nobody wrote to the sender of belongs to no tenant — not
+            // even to the one a signed-in user happens to have selected (the
+            // tenant trait stamps that on create).
+            if ($tenantId === null && $communication->tenant_id !== null) {
+                $communication->forceFill(['tenant_id' => null])->saveQuietly();
+            }
+
+            TextMessageReceived::dispatch($communication);
+
+            return $communication;
+        });
+    }
+
+    /**
+     * Give an inbound text message nobody could match (no outbound message to
+     * the sender's number — a new number) to the record a module recognised as
+     * its sender: the message takes that record's tenant and becomes its
+     * contact, then TextMessageReceived fires again inside that tenant. Only an
+     * inbound message without tenant can be assigned; any other is returned
+     * unchanged.
+     */
+    public function assignInbound(Communication $communication, Model $contact): Communication
+    {
+        $tenantId = $contact->getAttribute('tenant_id') !== null ? (int) $contact->getAttribute('tenant_id') : null;
+
+        if (! $communication->isInbound() || $communication->tenant_id !== null || $tenantId === null) {
+            return $communication;
+        }
+
+        return $this->inTenant($tenantId, function () use ($communication, $contact, $tenantId): Communication {
+            $communication->forceFill([
+                'tenant_id' => $tenantId,
+                'contact_type' => $contact->getMorphClass(),
+                'contact_id' => $contact->getKey(),
+            ])->save();
+
+            TextMessageReceived::dispatch($communication);
+
+            return $communication;
+        });
+    }
+
+    /**
+     * Record what the provider reports about an outbound text message later
+     * (its status callback): delivered, read or failed after all — with the
+     * provider's reason. A report never moves a message back: a late "sent"
+     * after "delivered" is ignored, and a delivered message cannot fail. A
+     * message id this log does not know returns null.
+     */
+    public function updateTextStatus(string $messageId, CommunicationStatus $status, ?string $error = null): ?Communication
+    {
+        $communication = Communication::acrossTenants()
+            ->where('direction', CommunicationDirection::Outbound)
+            ->where('message_id', $messageId)
+            ->first();
+
+        if ($communication === null || $status === CommunicationStatus::Received || $status === CommunicationStatus::Queued) {
+            return $communication;
+        }
+
+        if ($status->progress() <= $communication->status->progress()) {
+            return $communication;
+        }
+
+        $tenantId = $communication->tenant_id !== null ? (int) $communication->tenant_id : null;
+
+        return $this->inTenant($tenantId, function () use ($communication, $status, $error): Communication {
+            $communication->forceFill([
+                'status' => $status,
+                'error_message' => $status === CommunicationStatus::Failed ? ($error ?: $communication->error_message) : null,
+                'metadata' => array_merge($communication->metadata ?? [], [$status->value . '_at' => now()->toIso8601String()]),
+            ])->save();
+
+            return $communication;
+        });
+    }
+
+    /**
      * Deliver a logged text message through its channel's driver. A message that was
      * already sent is never sent twice (a retried job after a lost acknowledgement).
      */
     public function deliverText(Communication $communication): void
     {
-        if ($communication->status === CommunicationStatus::Sent) {
+        if ($communication->status->wasSent()) {
             return;
         }
 
@@ -241,6 +392,39 @@ class Communicator
             'currency' => $result->currency,
             'occurred_at' => now(),
         ]));
+    }
+
+    /**
+     * The latest outbound text message to a number: of the given channel first,
+     * then of any text channel (a WhatsApp reply to an SMS conversation).
+     */
+    private function latestOutboundTextTo(string $phone, CommunicationType $type): ?Communication
+    {
+        $textTypes = array_map(
+            fn(CommunicationType $candidate): string => $candidate->value,
+            array_values(array_filter(CommunicationType::cases(), fn(CommunicationType $candidate): bool => $candidate->isTextMessage())),
+        );
+
+        return Communication::acrossTenants()
+            ->where('direction', CommunicationDirection::Outbound)
+            ->where('to', $phone)
+            ->whereIn('type', $textTypes)
+            ->orderByRaw('CASE WHEN type = ? THEN 0 ELSE 1 END', [$type->value])
+            ->latest('id')
+            ->first();
+    }
+
+    /**
+     * Run inside the tenant's context, or in system mode without a tenant.
+     *
+     * @template TReturn
+     *
+     * @param  Closure(): TReturn  $callback
+     * @return TReturn
+     */
+    private function inTenant(?int $tenantId, Closure $callback): mixed
+    {
+        return $tenantId === null ? TenantContext::system($callback) : TenantContext::run($tenantId, $callback);
     }
 
     /**

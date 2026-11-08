@@ -9,9 +9,12 @@ the `noerd/noerd` guideline — this block only adds what is specific to this mo
 
 ### Domain
 - `Communication` (table `communications`, `BelongsToTenant`, `tenant_id` nullable) — one row per
-  outgoing mail or text message: `type` (`CommunicationType`: `email`, `sms`, `whatsapp`), `status` (`CommunicationStatus`:
-  `queued`, `sent`, `failed`), `from`, `to`, `subject`, `body`, `mailable_class`, `message_id`,
-  `error_message`, `metadata` (JSON), `sent_at`. TWO independent polymorphic links without
+  outgoing mail or text message and per INCOMING text message: `type` (`CommunicationType`:
+  `email`, `sms`, `whatsapp`), `direction` (`CommunicationDirection`: `outbound`, `inbound`),
+  `status` (`CommunicationStatus`: `queued`, `sent`, `delivered`, `read`, `failed`, `received` for inbound;
+  `wasSent()` = sent, delivered or read — never compare with `Sent` alone), `from`,
+  `to`, `subject`, `body`, `mailable_class`, `message_id`, `in_reply_to_id` (the outbound message
+  an inbound one answers, no foreign key), `error_message`, `metadata` (JSON), `sent_at`. TWO independent polymorphic links without
   foreign keys: `model()` (`model_type`/`model_id` — the SOURCE record the mail was generated
   from, e.g. an order) and `contact()` (`contact_type`/`contact_id` — the record the mail
   CONCERNS, e.g. the ordering party). Any Eloquent model may be linked; the module knows no
@@ -96,6 +99,31 @@ the `noerd/noerd` guideline — this block only adds what is specific to this mo
   the other way round
 - Consent is the caller's business: a module messaging its customers sends only to recipients
   who opted in to that channel
+
+- What the provider reports later (its status callback) goes to
+  `Communicator::updateTextStatus($messageId, $status, ?$error)`: `delivered`, `read` or `failed`
+  with the provider's reason in `error_message`, the time in `metadata.{status}_at`. A report never
+  moves a message back (reports arrive out of order; a delivered message cannot fail), and
+  `deliverText()` never sends a message that `wasSent()`
+
+### Receiving text messages (replies)
+- A provider module's webhook hands every incoming text message to
+  `app(Communicator::class)->receiveText(CommunicationType $type, string $from, ?string $to,
+  string $body, ?string $messageId = null, ?string $provider = null, array $metadata = []): ?Communication`
+  — this module still knows no provider and has no webhook of its own
+- The reply is matched to the LATEST OUTBOUND text message to the sender's number (same channel
+  first, then any text channel, across tenants): its tenant, `contact` and `model` become the
+  reply's, `in_reply_to_id` points at it. A sender nobody wrote to is logged without a tenant
+  (`TenantContext::system()`) and reaches no tenant. A `message_id` logged before returns the
+  existing row and fires nothing (providers retry webhooks); an invalid number returns `null`
+- After the row is written `Events\TextMessageReceived($communication)` fires INSIDE the
+  reply's `TenantContext`. A module recognises a reply to ITS message by the `contact`/`model`
+  it sent with and keeps its own record of the conversation — the log is pruned by retention
+- A sender nobody wrote to (a new number) may be recognised by a module itself: its listener of
+  the tenant-less event calls `Communicator::assignInbound($communication, $contact)`, which gives
+  the message the contact's tenant and fires `TextMessageReceived` again inside it — only once,
+  only for an inbound message without tenant
+- Inbound messages write no `CommunicationUsage` (the provider reports no price at that point)
 
 ### Structure
 - Livewire components (flat, `resources/views/components/`, namespace `communication::`):

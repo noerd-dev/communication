@@ -13,6 +13,16 @@ fields:
         label: SMS
       - value: whatsapp
         label: WhatsApp
+  - name: detailData.direction
+    label: Direction
+    type: select
+    colspan: 3
+    readonly: true
+    options:
+      - value: outbound
+        label: Outbound
+      - value: inbound
+        label: Inbound
   - name: detailData.status
     label: Status
     type: text
@@ -21,7 +31,7 @@ fields:
   - name: detailData.sent_at
     label: Sent at
     type: text
-    colspan: 6
+    colspan: 3
     readonly: true
   - name: detailData.from
     label: From
@@ -33,6 +43,14 @@ fields:
     type: text
     colspan: 6
     readonly: true
+  - name: detailData.body
+    label: Text
+    type: textarea
+    colspan: 12
+    readonly: true
+    showIfNot:
+      field: detailData.type
+      value: email
   - name: detailData.subject
     label: Subject
     type: text

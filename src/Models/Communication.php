@@ -4,8 +4,10 @@ namespace Noerd\Communication\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Noerd\Communication\Database\Factories\CommunicationFactory;
+use Noerd\Communication\Enums\CommunicationDirection;
 use Noerd\Communication\Enums\CommunicationStatus;
 use Noerd\Communication\Enums\CommunicationType;
 use Noerd\Traits\BelongsToTenant;
@@ -34,6 +36,19 @@ class Communication extends Model
         return $this->morphTo('contact');
     }
 
+    /**
+     * The outbound message an inbound one answers.
+     */
+    public function inReplyTo(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'in_reply_to_id');
+    }
+
+    public function isInbound(): bool
+    {
+        return $this->direction === CommunicationDirection::Inbound;
+    }
+
     protected static function newFactory(): CommunicationFactory
     {
         return CommunicationFactory::new();
@@ -43,6 +58,7 @@ class Communication extends Model
     {
         return [
             'type' => CommunicationType::class,
+            'direction' => CommunicationDirection::class,
             'status' => CommunicationStatus::class,
             'metadata' => 'array',
             'sent_at' => 'datetime',

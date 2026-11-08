@@ -41,5 +41,9 @@
     "Outgoing sender accounts. The default account provides the from and reply address for all mail of this tenant; without SMTP credentials it relays through the platform mail server.": "Absender-Konten für den Mailversand. Das Standard-Konto liefert Absender- und Antwortadresse für alle E-Mails dieses Mandanten; ohne SMTP-Zugangsdaten läuft der Versand über den Plattform-Mailserver.",
     "Address used for notifications about orders and campaigns. The sender address for outgoing mail is configured per sender.": "Adresse für Benachrichtigungen zu Bestellungen und Kampagnen. Die Absenderadresse für ausgehende E-Mails wird je Absender konfiguriert.",
     "Message": "Nachricht",
-    "Message ID": "Nachrichten-ID"
+    "Message ID": "Nachrichten-ID",
+    "Direction": "Richtung",
+    "Outbound": "Ausgehend",
+    "Inbound": "Eingehend",
+    "Text": "Text"
 }
