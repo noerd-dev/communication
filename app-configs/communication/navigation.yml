@@ -2,7 +2,7 @@
   name: communication
   hidden: true
   route: communications
-  block_menus:
+  blockMenus:
     - title: Communication
       navigations:
         - title: Communications
