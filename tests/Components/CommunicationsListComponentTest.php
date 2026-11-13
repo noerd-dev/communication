@@ -13,7 +13,7 @@ uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $user = createNoerdUserForApp('COMMUNICATION');
-    $this->actingAs($user);
+    $this->actingAs($user, 'noerd');
 
     $this->linked = NoerdUser::factory()->create(['selected_tenant_id' => $user->selected_tenant_id]);
 

@@ -12,7 +12,7 @@ uses(RefreshDatabase::class);
 
 it('lists only the senders of the acting tenant', function (): void {
     $user = createNoerdUserForApp('COMMUNICATION');
-    $this->actingAs($user);
+    $this->actingAs($user, 'noerd');
 
     MailSender::factory()->create([
         'tenant_id' => $user->selected_tenant_id,

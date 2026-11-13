@@ -16,7 +16,7 @@ it('redirects guests to the login', function (string $url): void {
 ]);
 
 it('renders the module screens for an authenticated tenant', function (string $url, string $component): void {
-    $this->actingAs(createNoerdUserForApp('COMMUNICATION'));
+    $this->actingAs(createNoerdUserForApp('COMMUNICATION'), 'noerd');
 
     $this->get($url)
         ->assertOk()
@@ -38,7 +38,7 @@ it('never discloses another tenant\'s SMTP credentials on the sender detail rout
 
     // A second tenant opens the URL of the first tenant's sender.
     $intruder = createNoerdUserForApp('COMMUNICATION');
-    $this->actingAs($intruder);
+    $this->actingAs($intruder, 'noerd');
 
     $this->get('/mail-sender/' . $foreignSender->id)
         ->assertOk()

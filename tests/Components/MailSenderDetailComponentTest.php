@@ -12,7 +12,7 @@ uses(RefreshDatabase::class);
 
 it('persists a sender on save', function (): void {
     $user = createNoerdUserForApp('COMMUNICATION');
-    $this->actingAs($user);
+    $this->actingAs($user, 'noerd');
 
     $component = Livewire::test('communication::mail-sender-detail')
         ->set('detailData', validDetailPayload(MailSender::class, [
@@ -37,7 +37,7 @@ it('persists a sender on save', function (): void {
 
 it('reports the fields the layout marks as required', function (): void {
     $user = createNoerdUserForApp('COMMUNICATION');
-    $this->actingAs($user);
+    $this->actingAs($user, 'noerd');
 
     $component = Livewire::test('communication::mail-sender-detail')
         ->set('detailData', [])
@@ -48,7 +48,7 @@ it('reports the fields the layout marks as required', function (): void {
 
 it('refuses a test email before the sender is saved', function (): void {
     $user = createNoerdUserForApp('COMMUNICATION');
-    $this->actingAs($user);
+    $this->actingAs($user, 'noerd');
 
     Livewire::test('communication::mail-sender-detail')
         ->call('sendTestEmail')
@@ -59,7 +59,7 @@ it('refuses a test email before the sender is saved', function (): void {
 it('sends a test email through the sender to the logged-in user', function (): void {
     config(['mail.default' => 'array']);
     $user = createNoerdUserForApp('COMMUNICATION');
-    $this->actingAs($user);
+    $this->actingAs($user, 'noerd');
     app('mail.manager')->forgetMailers();
     Cache::flush();
 
@@ -86,7 +86,7 @@ it('sends a test email through the sender to the logged-in user', function (): v
 it('rate-limits the test email per sender, not per tenant', function (): void {
     config(['mail.default' => 'array']);
     $user = createNoerdUserForApp('COMMUNICATION');
-    $this->actingAs($user);
+    $this->actingAs($user, 'noerd');
     app('mail.manager')->forgetMailers();
     Cache::flush();
 
@@ -111,7 +111,7 @@ it('refuses the test email for a sender of another tenant', function (): void {
     $foreignSender = MailSender::factory()->create(['tenant_id' => $owner->selected_tenant_id]);
 
     $intruder = createNoerdUserForApp('COMMUNICATION');
-    $this->actingAs($intruder);
+    $this->actingAs($intruder, 'noerd');
 
     // The lookup runs through the tenant global scope, so the foreign id
     // resolves to nothing and no mail is ever sent through that account.

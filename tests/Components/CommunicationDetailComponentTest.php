@@ -11,7 +11,7 @@ uses(RefreshDatabase::class);
 
 it('never deletes a logged communication from the detail', function (): void {
     $user = createNoerdUserForApp('COMMUNICATION');
-    $this->actingAs($user);
+    $this->actingAs($user, 'noerd');
 
     $communication = Communication::factory()->create(['tenant_id' => $user->selected_tenant_id]);
 
