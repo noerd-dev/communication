@@ -1,7 +1,7 @@
 title: Senders
 actions:
   - label: New Sender
-    route: mail-sender.detail
+    modalRoute: mail-sender.detail
 description: 'Outgoing sender accounts. The default account provides the from and reply address for all mail of this tenant; without SMTP credentials it relays through the platform mail server.'
 defaultSort:
   field: name

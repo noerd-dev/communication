@@ -40,8 +40,9 @@ it('never discloses another tenant\'s SMTP credentials on the sender detail rout
     $intruder = createNoerdUserForApp('COMMUNICATION');
     $this->actingAs($intruder, 'noerd');
 
+    // The route of a record the tenant scope hides answers 404.
     $this->get('/mail-sender/' . $foreignSender->id)
-        ->assertOk()
+        ->assertNotFound()
         ->assertDontSee('smtp.foreign-host.example')
         ->assertDontSee('foreign-user')
         ->assertDontSee('foreign-secret');
